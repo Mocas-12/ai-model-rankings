@@ -606,7 +606,7 @@ function afterPrimary() {
 function renderAll() {
   safe('kpi', renderKPI); safe('usage', renderUsage); safe('kings', renderKings); safe('dimtable', renderDimTable);
   safe('value', renderValue); safe('speed', renderSpeed); safe('trend', renderTrend);
-  safe('vendors', renderVendors); safe('spend', renderSpendTask); safe('cat', renderCat); safe('risers', renderRisers);
+  safe('vendors', renderVendors); safe('spend', renderSpendTask); safe('cattabs', renderCatTabs); safe('cat', renderCat); safe('risers', renderRisers);
 }
 
 /* ---------- 事件 & 启动 ---------- */
