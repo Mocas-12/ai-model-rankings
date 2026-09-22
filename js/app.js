@@ -33,6 +33,11 @@ const REFRESH_SEC = 300;
 /* ---------------- 小工具 ---------------- */
 const $ = s => document.querySelector(s);
 const PAL = ['#7c5cff','#22d3ee','#f5c542','#34d399','#fb7185','#60a5fa','#f97316','#a78bfa','#2dd4bf','#f472b6','#94a3b8','#eab308'];
+const TREND_PAL = ['#7c5cff', '#22d3ee', '#34d399', '#e8b73a', '#fb7185', '#60a5fa'];
+const rampColor = t => {
+  const A = [124, 92, 255], B = [34, 211, 238];
+  return 'rgb(' + A.map((v, i) => Math.round(v+(B[i]-v)*t)).join(',') + ')';
+};
 const TIP = { backgroundColor:'#161d33', borderColor:'#2a3550', textStyle:{color:'#e8ecf6',fontSize:12}, confine:true };
 const AXIS_C = line => ({ axisLine:{lineStyle:{color:'#232c47'}}, axisTick:{show:false}, axisLabel:{color:'#9aa4bd',fontSize:11}, splitLine: line?{lineStyle:{color:'#1a2138'}}:{show:false} });
 
@@ -249,7 +254,7 @@ function renderKPI() {
 function renderUsage() {
   const c = chart('chart-usage'); if (!c || !D.usage.length) return;
   const byTok = r => r.total_prompt_tokens + r.total_completion_tokens;
-  const rows = [...D.usage].sort((a, b) => (usageMetric === 'tokens' ? byTok(b)-byTok(a) : (b.count||0)-(a.count||0))).slice(0, 15);
+  const rows = [...D.usage].sort((a, b) => (usageMetric === 'tokens' ? byTok(b)-byTok(a) : (b.count||0)-(a.count||0))).slice(0, 12);
   const total = D.usage.reduce((s, r) => s + byTok(r), 0);
   const names = rows.map(r => shortName(r.model_permaslug) + (r.variant === 'free' ? ' ·免费' : r.variant === 'batch' ? ' ·batch' : ''));
   const vals  = rows.map(r => usageMetric === 'tokens' ? byTok(r) : (r.count||0));
@@ -264,11 +269,11 @@ function renderUsage() {
     xAxis: Object.assign(AXIS_C(true), { type:'value', axisLabel:{ color:'#9aa4bd', fontSize:11, formatter:fmtr } }),
     yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:names, axisLabel:{ color:'#c6cde0', fontSize:12, formatter(v, i) { return rows[i].variant === 'free' ? '{fr|'+v+'}' : v; }, rich:{ fr:{ color:'#34d399', fontSize:12, width:170, overflow:'truncate' } }, width:170, overflow:'truncate' } }),
     series: [{
-      type:'bar', data:vals, barWidth:'62%',
-      label: { show:true, position:'right', color:'#9aa4bd', fontSize:11, formatter: p => fmtr(p.value) },
-      itemStyle: { borderRadius:[0, 6, 6, 0], color: p => {
-        const col = authorColor(authorOf(rows[p.dataIndex].model_permaslug));
-        return new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset:0, color:col+'55' }, { offset:1, color:col }]);
+      type:'bar', data:vals, barWidth:'56%',
+      label: { show:true, position:'right', color:'#8b96b2', fontSize:11, formatter: p => fmtr(p.value) },
+      itemStyle: { borderRadius:[0, 5, 5, 0], color: p => {
+        if (rows[p.dataIndex].variant === 'free') return new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset:0, color:'rgba(52,211,153,.25)' }, { offset:1, color:'#34d399' }]);
+        return new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset:0, color:'rgba(124,92,255,.30)' }, { offset:1, color:'#22d3ee' }]);
       } },
     }],
   }, { notMerge:true });
@@ -282,7 +287,6 @@ function kingCard(cat, src, model, scoreLine, slug, opts) {
     <div class="k-cat">${esc(cat)}<span class="k-src">${esc(src)}</span></div>
     <div class="k-model">${esc(model)}${chip}</div>
     <div class="k-score">${scoreLine}</div>
-    <div class="k-rank">#1</div>
   </div>`;
 }
 function renderKings() {
@@ -322,8 +326,8 @@ function renderMatrix() {
   const byTok = r => r.total_prompt_tokens + r.total_completion_tokens;
   const usageBase = {};
   D.usage.forEach(r => { const b = baseSlug(r.model_permaslug); usageBase[b] = (usageBase[b] || 0)+byTok(r); });
-  const aaTop = [...((D.bench.aaData || {}).intelligence || [])].sort((a, b2) => b2.score-a.score).slice(0, 10).map(m => baseSlug(m.permaslug));
-  const bases = [...new Set([...Object.keys(usageBase).sort((a, b2) => usageBase[b2]-usageBase[a]).slice(0, 12), ...aaTop])].slice(0, 16);
+  const aaTop = [...((D.bench.aaData || {}).intelligence || [])].sort((a, b2) => b2.score-a.score).slice(0, 8).map(m => baseSlug(m.permaslug));
+  const bases = [...new Set([...Object.keys(usageBase).sort((a, b2) => usageBase[b2]-usageBase[a]).slice(0, 10), ...aaTop])].slice(0, 12);
   const cols = [
     { k:'用量', v: b => usageBase[b], fmt: fmtTokS },
     { k:'智能指数', v: b => { const e = nameIdx.base2aa[b]; const s = e && e.intelligence ? e.intelligence.score : null; return s != null ? s : ((nameIdx.percentile[b] || {}).intelligence ?? null); }, fmt: v => v.toFixed(1) },
@@ -360,7 +364,7 @@ function renderMatrix() {
     grid: { left:8, right:16, top:36, bottom:10, containLabel:true },
     xAxis: { type:'category', data:cols.map(c2 => c2.k), splitArea:{show:false}, axisLabel:{ color:'#c6cde0', fontSize:12, interval:0 }, axisLine:{lineStyle:{color:'#232c47'}}, axisTick:{show:false} },
     yAxis: Object.assign({ type:'category', data:bases.map(b => shortName(b)), inverse:true, axisLabel:{ color:'#c6cde0', fontSize:12, width:150, overflow:'truncate' } }, AXIS_C(false)),
-    visualMap: { min:0, max:100, calculable:false, show:false, inRange:{ color:['#1b2440','#3b3f7a','#7c5cff','#22d3ee','#f5c542'] } },
+    visualMap: { min:0, max:100, calculable:false, show:false, inRange:{ color:['#151c30','#3a3f7d','#7c5cff','#22d3ee'] } },
     series: [{
       type:'heatmap', data:cells,
       label: { show:true, fontSize:10.5, color:'#e8ecf6', formatter(p) { return p.data[3] == null ? '—' : cols[p.data[0]].fmt(p.data[3]); } },
@@ -384,24 +388,25 @@ function renderValue() {
   D.usage.forEach(r => { usageBase[baseSlug(r.model_permaslug)] = (usageBase[baseSlug(r.model_permaslug)] || 0)+r.total_prompt_tokens+r.total_completion_tokens; });
   const data = pts.map(m => ({
     name:m.slug, value:[m.cost, m.score, usageBase[baseSlug(m.slug)] || 0],
-    itemStyle:{ color:authorColor(authorOf(m.slug)), opacity:.85 },
   }));
-  const labelSet = new Set([...data].sort((a, b) => b.value[1]-a.value[1]).slice(0, 6).map(d => d.name)
-    .concat([...data].sort((a, b) => a.value[0]-b.value[0]).slice(0, 4).map(d => d.name)));
+  const labelSet = new Set([...data].sort((a, b) => b.value[1]-a.value[1]).slice(0, 5).map(d => d.name)
+    .concat([...data].sort((a, b) => a.value[0]-b.value[0]).slice(0, 3).map(d => d.name)));
   c.setOption({
     tooltip: Object.assign({ formatter(p) {
       const v = p.value;
       return `<b>${esc(nameOf(p.name))}</b><br>单请求成本：${fmtUsd(v[0])}<br>智能指数：${v[1].toFixed(1)}<br>24h Token：${fmtTok(v[2])}`;
     } }, TIP),
-    grid: { left:10, right:20, top:20, bottom:10, containLabel:true },
+    grid: { left:10, right:24, top:16, bottom:4, containLabel:true },
     legend: { show:false },
-    xAxis: Object.assign(AXIS_C(true), { type:'log', name:'单请求成本(USD，对数)', nameTextStyle:{color:'#6b7590', fontSize:11}, min:0.0005, max:100, axisLabel:{ color:'#9aa4bd', fontSize:10.5, formatter:v => '$'+v } }),
-    yAxis: Object.assign(AXIS_C(true), { type:'value', name:'AA 智能指数', nameTextStyle:{color:'#6b7590', fontSize:11}, min:'dataMin', max:'dataMax' }),
+    xAxis: Object.assign(AXIS_C(true), { type:'log', min:0.0005, max:100, axisLabel:{ color:'#64708c', fontSize:10.5, formatter:v => '$'+v } }),
+    yAxis: Object.assign(AXIS_C(true), { type:'value', min:'dataMin', max:'dataMax', axisLabel:{ color:'#64708c', fontSize:10.5 } }),
     series: [{
       type:'scatter', data,
-      symbolSize: d => Math.min(46, 7+Math.sqrt(d[2])/26000),
-      label: { show:true, position:'top', fontSize:10.5, color:'#c6cde0', formatter:p => labelSet.has(p.name) ? shortName(p.name) : '' },
-      emphasis: { scale:1.2 },
+      symbolSize: d => Math.min(34, 6+Math.sqrt(d[2])/32000),
+      itemStyle: { color: p => labelSet.has(p.name) ? '#22d3ee' : 'rgba(124,92,255,.45)', borderColor:'rgba(124,92,255,.8)', borderWidth: p => labelSet.has(p.name) ? 0 : 1 },
+      label: { show:true, position:'top', fontSize:10.5, color:'#b9c2d8', formatter:p => labelSet.has(p.name) ? shortName(p.name) : '' },
+      labelLayout: { hideOverlap:true },
+      emphasis: { scale:1.15 },
     }],
   }, { notMerge:true });
 }
@@ -409,24 +414,25 @@ function renderValue() {
 /* ---------- 速度榜 ---------- */
 function renderSpeed() {
   const c = chart('chart-speed'); if (!c || !D.perf.length) return;
-  const rows = [...D.perf].filter(p => p.p50_latency && p.p50_throughput).sort((a, b) => (b.request_count||0)-(a.request_count||0)).slice(0, 30);
+  const rows = [...D.perf].filter(p => p.p50_latency && p.p50_throughput).sort((a, b) => (b.request_count||0)-(a.request_count||0)).slice(0, 24);
   if (!rows.length) return;
   const maxReq = rows[0].request_count || 1;
-  const labelSet = new Set([...rows].sort((a, b) => b.p50_throughput-a.p50_throughput).slice(0, 5).map(r => r.slug)
-    .concat([...rows].sort((a, b) => a.p50_latency-b.p50_latency).slice(0, 4).map(r => r.slug)));
+  const labelSet = new Set([...rows].sort((a, b) => b.p50_throughput-a.p50_throughput).slice(0, 4).map(r => r.slug)
+    .concat([...rows].sort((a, b) => a.p50_latency-b.p50_latency).slice(0, 3).map(r => r.slug)));
   c.setOption({
     tooltip: Object.assign({ formatter(p) {
       const r = rows[p.dataIndex];
       return `<b>${esc(nameOf(r.slug))}</b><br>P50 延迟：${(r.p50_latency/1000).toFixed(2)} s<br>P50 吞吐：${Math.round(r.p50_throughput)} tok/s<br>请求数：${fmtReq(r.request_count||0)}<br>最快线路：${esc(r.best_latency_provider || '--')}（${fmtUsd(r.best_latency_price||0)}/M）`;
     } }, TIP),
-    grid: { left:10, right:20, top:20, bottom:10, containLabel:true },
-    xAxis: Object.assign(AXIS_C(true), { type:'log', name:'P50 延迟 (ms，对数)', nameTextStyle:{color:'#6b7590', fontSize:11}, axisLabel:{ color:'#9aa4bd', fontSize:10.5, formatter:v => v >= 1000 ? (v/1000)+'s' : v } }),
-    yAxis: Object.assign(AXIS_C(true), { type:'value', name:'吞吐 (tok/s)', nameTextStyle:{color:'#6b7590', fontSize:11} }),
+    grid: { left:10, right:24, top:16, bottom:4, containLabel:true },
+    xAxis: Object.assign(AXIS_C(true), { type:'log', axisLabel:{ color:'#64708c', fontSize:10.5, formatter:v => v >= 1000 ? (v/1000)+'s' : v } }),
+    yAxis: Object.assign(AXIS_C(true), { type:'value', axisLabel:{ color:'#64708c', fontSize:10.5 } }),
     series: [{
       type:'scatter',
-      data: rows.map(r => ({ value:[r.p50_latency, r.p50_throughput, r.request_count], name:r.slug, itemStyle:{ color:authorColor(authorOf(r.slug)), opacity:.85 } })),
-      symbolSize: d => 8+Math.sqrt(d[2]/maxReq)*30,
-      label: { show:true, position:'top', fontSize:10.5, color:'#c6cde0', formatter:p => labelSet.has(p.name) ? shortName(p.name) : '' },
+      data: rows.map(r => ({ value:[r.p50_latency, r.p50_throughput, r.request_count], name:r.slug, itemStyle:{ color: labelSet.has(r.slug) ? '#22d3ee' : 'rgba(124,92,255,.45)', borderColor:'rgba(124,92,255,.8)', borderWidth: labelSet.has(r.slug) ? 0 : 1 } })),
+      symbolSize: d => 7+Math.sqrt(d[2]/maxReq)*22,
+      label: { show:true, position:'top', fontSize:10.5, color:'#b9c2d8', formatter:p => labelSet.has(p.name) ? shortName(p.name) : '' },
+      labelLayout: { hideOverlap:true },
     }],
   }, { notMerge:true });
 }
@@ -442,7 +448,7 @@ function renderTrend() {
   const dates = rows.map(d => d.x.slice(5));
   const sums = {};
   rows.forEach(d => Object.entries(d.ys || {}).forEach(([s, v]) => { if (s !== 'Others') sums[s] = (sums[s] || 0)+v; }));
-  const top = Object.keys(sums).sort((a, b) => sums[b]-sums[a]).slice(0, 8);
+  const top = Object.keys(sums).sort((a, b) => sums[b]-sums[a]).slice(0, 6);
   c.setOption({
     tooltip: Object.assign({ trigger:'axis' }, TIP),
     legend: { type:'scroll', top:0, textStyle:{ color:'#9aa4bd', fontSize:11 }, pageIconColor:'#7c5cff', pageTextStyle:{color:'#9aa4bd'} },
@@ -452,7 +458,7 @@ function renderTrend() {
     series: top.map((s, i) => ({
       name: shortName(s), type:'line', smooth:true, showSymbol:false,
       data: rows.map(d => d.ys[s] || null),
-      lineStyle:{ width:2, color:authorColor(authorOf(s)) }, itemStyle:{ color:authorColor(authorOf(s)) },
+      lineStyle:{ width:1.8, color:TREND_PAL[i%TREND_PAL.length] }, itemStyle:{ color:TREND_PAL[i%TREND_PAL.length] },
       emphasis:{ focus:'series' },
     })),
   }, { notMerge:true });
@@ -471,10 +477,10 @@ function renderVendors() {
     legend: { orient:'vertical', right:0, top:'middle', textStyle:{ color:'#9aa4bd', fontSize:11 }, itemWidth:10, itemHeight:10 },
     series: [{
       type:'pie', center:['32%', '52%'], radius:['48%', '72%'],
-      data: rows.map((r, i) => ({ name:authorName(r.author), value:r.weeklyTokens, itemStyle:{ color:PAL[i%PAL.length] } })),
-      label: { show:true, position:'center', formatter:() => '厂商\n格局', rich:{ a:{ fontSize:15, fontWeight:700, color:'#e8ecf6', lineHeight:22 } }, fontSize:14, color:'#9aa4bd', lineHeight:20 },
-      itemStyle: { borderColor:'#0f1422', borderWidth:2, borderRadius:6 },
-      emphasis: { scaleSize:6 },
+      data: rows.map((r, i) => ({ name:authorName(r.author), value:r.weeklyTokens, itemStyle:{ color:rampColor(i/Math.max(rows.length-1, 1)) } })),
+      label: { show:true, position:'center', formatter:'厂商\n格局', fontSize:14, color:'#8b96b2', lineHeight:20 },
+      itemStyle: { borderColor:'#111726', borderWidth:2, borderRadius:5 },
+      emphasis: { scaleSize:5 },
     }],
   }, { notMerge:true });
 }
@@ -489,10 +495,10 @@ function renderSpendTask() {
     legend: { orient:'vertical', right:0, top:'middle', textStyle:{ color:'#9aa4bd', fontSize:11 }, itemWidth:10, itemHeight:10 },
     series: [{
       type:'pie', center:['32%', '52%'], radius:['48%', '72%'],
-      data: rows.map((r, i) => ({ name:TASK_CN[r.key] || r.label || r.key, value:+(r.spendShare*100).toFixed(1), itemStyle:{ color:PAL[(i+2)%PAL.length] } })),
-      label: { show:true, position:'center', formatter:'30 天\n任务花费', fontSize:14, color:'#9aa4bd', lineHeight:20 },
-      itemStyle: { borderColor:'#0f1422', borderWidth:2, borderRadius:6 },
-      emphasis: { scaleSize:6 },
+      data: rows.map((r, i) => ({ name:TASK_CN[r.key] || r.label || r.key, value:+(r.spendShare*100).toFixed(1), itemStyle:{ color:TREND_PAL[(i+1)%TREND_PAL.length] } })),
+      label: { show:true, position:'center', formatter:'30 天\n任务花费', fontSize:14, color:'#8b96b2', lineHeight:20 },
+      itemStyle: { borderColor:'#111726', borderWidth:2, borderRadius:5 },
+      emphasis: { scaleSize:5 },
     }],
   }, { notMerge:true });
 }
@@ -520,7 +526,7 @@ function renderCat() {
   const c = chart('chart-cat'); if (!c || !Array.isArray(arr) || !arr.length) return;
   const last = arr[arr.length-1];
   const total = Object.values(last.ys || {}).reduce((s, v) => s+v, 0);
-  const rows = Object.entries(last.ys || {}).filter(([s]) => s !== 'Others').sort((a, b) => b[1]-a[1]).slice(0, 10);
+  const rows = Object.entries(last.ys || {}).filter(([s]) => s !== 'Others').sort((a, b) => b[1]-a[1]).slice(0, 8);
   const fmtr = def.unit ? (v => v.toFixed(0)+' '+def.unit) : fmtTok;
   $('#cat-sub').textContent = `${def.label} · ${last.x}（北京时间）· 当日总量 ${fmtr(total)}`;
   c.setOption({
@@ -532,12 +538,9 @@ function renderCat() {
     xAxis: Object.assign(AXIS_C(true), { type:'value', axisLabel:{ color:'#9aa4bd', fontSize:11, formatter:fmtr } }),
     yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:rows.map(r => shortName(r[0])), axisLabel:{ color:'#c6cde0', fontSize:12, width:170, overflow:'truncate' } }),
     series: [{
-      type:'bar', data:rows.map(r => r[1]), barWidth:'62%',
-      label: { show:true, position:'right', color:'#9aa4bd', fontSize:11, formatter:p => fmtr(p.value) },
-      itemStyle: { borderRadius:[0, 6, 6, 0], color:p => {
-        const col = authorColor(authorOf(rows[p.dataIndex][0]));
-        return new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset:0, color:col+'55' }, { offset:1, color:col }]);
-      } },
+      type:'bar', data:rows.map(r => r[1]), barWidth:'56%',
+      label: { show:true, position:'right', color:'#8b96b2', fontSize:11, formatter:p => fmtr(p.value) },
+      itemStyle: { borderRadius:[0, 5, 5, 0], color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset:0, color:'rgba(124,92,255,.30)' }, { offset:1, color:'#22d3ee' }]) },
     }],
   }, { notMerge:true });
 }
@@ -560,13 +563,12 @@ function renderRisers() {
   (d.breakouts || []).slice(0, 2).forEach(x => items.push({ ...x, tag:'爆发', tagCls:'r-tag' }));
   if (!items.length) { el.innerHTML = '<div class="ph">暂无数据</div>'; return; }
   el.innerHTML = items.map(x => {
-    const col = authorColor(authorOf(x.variantPermaslug));
     const g = x.changePercent >= 0 ? '+'+(x.changePercent*100).toFixed(0)+'%' : (x.changePercent*100).toFixed(0)+'%';
     return `<div class="riser">
-      <div class="r-head"><span class="r-name">${esc(shortName(x.variantPermaslug))}<span class="${x.tag === '爆发' ? 'r-tag' : 'r-tag'}" style="background:rgba(124,92,255,.15);color:#a78bfa">${x.tag}</span></span>
+      <div class="r-head"><span class="r-name">${esc(shortName(x.variantPermaslug))}<span class="r-tag">${x.tag}</span></span>
       <span class="r-grow">${g}</span></div>
       <div class="r-tok">周 Token ${fmtTok(x.weeklyTokens)} · 上周 ${fmtTok(x.prevWeeklyTokens || 0)}</div>
-      ${sparkline(x.series || x.dailySeries || [], col)}
+      ${sparkline(x.series || x.dailySeries || [], '#22d3ee')}
     </div>`;
   }).join('');
 }
@@ -581,12 +583,11 @@ function renderNewModels() {
   if (!rows.length) return;
   $('#sec-new').hidden = false;
   $('#newmodels').innerHTML = rows.map(m => {
-    const ctx = m.context_length ? (m.context_length >= 1e6 ? (m.context_length/1e6)+'M' : Math.round(m.context_length/1000)+'K') : '--';
+    const ctx = m.context_length ? (m.context_length >= 1e6 ? (m.context_length/1e6).toFixed(1).replace(/\.0$/, '')+'M' : Math.round(m.context_length/1000)+'K') : '--';
     const mod = (m.output_modalities || []).filter(x => x !== 'text').join('/');
     return `<div class="nm">
       <div class="n-name">${esc(m.short_name || m.name)}</div>
-      <div class="n-meta"><span>${esc(m.author_display_name || authorName(m.author))}</span><span>${m.created_at.slice(5, 10)}</span><span>上下文 ${ctx}</span>${mod ? `<span style="color:#f5c542">${esc(mod)}</span>` : ''}</div>
-      ${m.description ? `<div class="n-desc">${esc(m.description)}</div>` : ''}
+      <div class="n-meta"><span>${esc(m.author_display_name || authorName(m.author))}</span><span>${m.created_at.slice(5, 10)} 上架</span><span>上下文 ${ctx}</span>${mod ? `<span class="n-mod">${esc(mod)}</span>` : ''}</div>
     </div>`;
   }).join('');
 }
