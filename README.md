@@ -1,76 +1,145 @@
-# LLMRANKS · AI 大模型实时战力榜
+<p align="center">
+  <img src="logo.svg" width="96" alt="AI Model Rankings logo">
+</p>
 
-一个纯静态的 AI 大模型实时排名网站。数据全部来自 [OpenRouter](https://openrouter.ai/rankings) 公开接口（浏览器直连，无需后端），每 5 分钟自动刷新，一眼看清**当下哪个模型、哪方面最强**。
+<h1 align="center">AI Model Rankings</h1>
 
-![tech](https://img.shields.io/badge/tech-%E7%BA%AF%E9%9D%99%E6%80%81%20%2B%20ECharts-7c5cff) ![source](https://img.shields.io/badge/%E6%95%B0%E6%8D%AE-OpenRouter-22d3ee)
+<p align="center"><b>Real-time AI model power rankings on an ink-wash dashboard (水墨风大模型实时战力榜) — usage, benchmarks, price-performance, speed & trends at a glance.</b></p>
 
-## 看什么
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.11%2B-6f9bc4" alt="Python">
+  <img src="https://img.shields.io/badge/streamlit-1.36%2B-c74a3c" alt="Streamlit">
+  <img src="https://img.shields.io/badge/echarts-5.6-e0b04a" alt="ECharts">
+  <img src="https://img.shields.io/badge/backend-less-63a583" alt="Backendless">
+</p>
 
-| 区块 | 内容 | 数据来源 |
-|---|---|---|
-| KPI 概览 | 24h Token 总量 / 请求次数 / 活跃模型数 / 用量冠军 | rankings/models |
-| 用量总榜 | 24 小时真实 Token 消耗 Top 15（可切请求次数） | rankings/models?view=day |
-| 分项王者 | 综合智能 / 编程 / 智能体 / 网页 / UI / 可视化 / 游戏 / SVG / 3D / 幻灯片 各维度 No.1 + 性价比之王 + 本周黑马 | AA · Design Arena · discovery |
-| 能力矩阵 | 热门模型 × 9 维度相对强度热力图 | benchmarks + costPerRequest |
-| 性价比图 | 单请求成本 vs 智能指数散点（气泡=用量） | benchmarks |
-| 速度榜 | P50 延迟 vs 吞吐散点 | rankings/performance |
-| 30 天趋势 | 头部模型每日 Token 曲线 | model-rankings-chart |
-| 厂商格局 / 钱花在哪 | 周厂商份额环形图 / 30 天任务花费占比 | discovery · task-spend |
-| 分类用量榜 | 编程 / 自然语言 / 长上下文 / 图像 / 工具调用 / 视频生成 | rankings/<category> |
-| 本周黑马 & 新上架 | 周涨幅最大的模型（带迷你走势）/ 近 14 天新模型 | discovery · catalog/models |
+<p align="center"><b><a href="https://ai-model-rankings.streamlit.app/">🌐 Live Demo (ai-model-rankings.streamlit.app)</a></b></p>
 
-> 智能指数 / 编程 / 智能体分数来自 Artificial Analysis，网页 / 可视化 / 游戏开发等分数来自 Design Arena ELO，均由 OpenRouter 官方 rankings 页聚合提供。
+**English** | [简体中文](./README.zh-CN.md)
 
-## 本地运行
+*榜如水墨，浓淡随时 — rankings refreshed like ink, every 5 minutes.*
 
-纯静态，无任何构建与依赖：
+📖 Table of Contents
+---
 
-```bash
-cd ai-model-rankings
-python -m http.server 8124
-# 打开 http://127.0.0.1:8124
+- [✨ Features](#-features)
+- [🧠 How It Works](#-how-it-works)
+- [📖 Usage Guide](#-usage-guide)
+- [📁 Project Structure](#-project-structure)
+- [🚀 Quick Start](#-quick-start)
+- [🌐 Deployment](#-deployment)
+- [🛠️ Customization](#️-customization)
+- [❓ FAQ](#-faq)
+- [📄 License](#-license)
+
+✨ Features
+---
+
+- **🏆 Usage Top 12** — real token consumption & request counts of the last 24h across 400+ live models, free variants highlighted.
+- **👑 Category Kings** — the current No.1 per discipline: intelligence / coding / agentic (Artificial Analysis), web-dev, dataviz, gamedev, UI (Design Arena ELO), value-for-money and weekly riser.
+- **📐 Dimension Champions** — a one-glance table listing the single strongest model per dimension.
+- **💰 Price–Performance scatter** — cost per request vs intelligence index, bubble size = usage.
+- **⚡ Speed scatter** — P50 latency vs throughput, bubble = request volume.
+- **📈 30-day trend** — daily token lines of the top 6 models.
+- **🏢 Vendor share & task spend** — weekly market share donut, 30-day spend-by-category donut.
+- **🗂️ Category boards** — programming / natural language / long-context / image / tool-call / video boards.
+- **🐎 Dark horses & fresh models** — biggest weekly gainers with sparklines; models onboarded in the last 14 days.
+- **🎨 Ink-wash dark UI** — Ma Shan Zheng calligraphy, seal stamps, layered mountains; every vendor rendered in its **real brand color** (Claude orange, GLM blue, OpenAI green…).
+- **🔄 Auto-refresh** every 5 minutes, Beijing-time timestamps.
+
+🧠 How It Works
+---
+
+```mermaid
+flowchart LR
+    A[OpenRouter public APIs] -->|fetch pool x3 retries| B[Normalize + slug match]
+    B --> C[ECharts render]
+    C --> D[Ink-wash dark UI]
+    D -->|postMessage / frameElement| E[Streamlit iframe auto-height]
 ```
 
-OpenRouter 所有引用接口均返回 `access-control-allow-origin: *`，直接双击 `index.html`（file://）通常也能跑。
+1. The browser fetches 12 public OpenRouter endpoints concurrently (3-way pool, empty-payload & network retries).
+2. Responses are normalized (unwrapping `{data:{data:[…]}}` variants); dated model slugs are reduced to base slugs to join benchmarks, costs and names.
+3. ECharts renders 7 charts + 2 card grids + 1 table; per-vendor brand colors are applied consistently across all charts.
+4. `app.py` embeds the page as a full-width Streamlit component; the page stretches its own iframe to the true content height.
 
-## 部署
+📖 Usage Guide
+---
 
-### Streamlit Community Cloud（推荐，已就绪）
+- **Tokens / Requests** — toggle the usage leaderboard metric.
+- **Category tabs** — switch the category board (编程 / 自然语言 / 长上下文 / 图像 / 工具调用 / 视频).
+- **Hover anything** — every chart carries full tooltips (slug, vendor, share, cost, provider).
+- **⟳ 刷新** — force a fresh fetch; data also auto-refreshes every 5 minutes.
 
-仓库已含 Streamlit 入口，直接部署：
+📁 Project Structure
+---
 
-1. Fork / 使用本仓库，登录 [share.streamlit.io](https://share.streamlit.io)
-2. New app → 选择仓库 `Mocas-12/ai-model-rankings`、分支 `main`、**主文件 `app.py`**
-3. 点 Deploy，几十秒后即得 `https://xxx.streamlit.app`
+```
+ai-model-rankings/
+├── app.py                  # Streamlit entry: embeds the page full-width
+├── requirements.txt        # streamlit only
+├── .streamlit/config.toml  # dark silk theme for Streamlit chrome
+├── index.html              # the page itself
+├── css/style.css           # ink-wash dark theme
+├── js/app.js               # data layer + charts + cards
+├── logo.svg                # README header logo
+├── avatar.png              # 640×640 repo avatar (upload manually in Settings)
+└── docs/index.html         # GitHub Pages redirect page
+```
 
-本地预览 Streamlit 版：
+🚀 Quick Start
+---
+
+Static version (no dependencies):
+
+```bash
+python -m http.server 8124
+# open http://127.0.0.1:8124
+```
+
+Streamlit version:
 
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-`app.py` 会把水墨页面作为全宽组件内嵌（自动按真实内容撑高、隐藏 Streamlit 界面元素），`.streamlit/config.toml` 已配好配套暗色主题。
+🌐 Deployment
+---
 
-### 其他静态托管
+**Streamlit Community Cloud** — fork this repo, then [share.streamlit.io](https://share.streamlit.io) → New app → repo `Mocas-12/ai-model-rankings`, branch `main`, main file **`app.py`** → Deploy. Done.
 
-任意静态托管即可（Cloudflare Pages / Vercel / GitHub Pages）：把整个目录拖上去就行，无需环境变量、无需 Serverless 函数。
+**Any static host** — Cloudflare Pages / Vercel / GitHub Pages: upload the folder as-is (everything runs client-side).
 
-## 接口清单
+🛠️ Customization
+---
 
-```
-GET https://openrouter.ai/api/frontend/v1/rankings/models?view=day
-GET https://openrouter.ai/api/frontend/v1/rankings/benchmarks
-GET https://openrouter.ai/api/frontend/v1/rankings/model-rankings-chart
-GET https://openrouter.ai/api/frontend/v1/rankings/discovery
-GET https://openrouter.ai/api/frontend/v1/rankings/task-spend
-GET https://openrouter.ai/api/frontend/v1/rankings/performance
-GET https://openrouter.ai/api/frontend/v1/rankings/{programming-language|natural-language|context-length|images|tools|video-output-hours}
-GET https://openrouter.ai/api/frontend/v1/catalog/models
-```
+- `REFRESH_SEC` in `js/app.js` — auto-refresh interval (default 300 s).
+- `PAL` — the traditional Chinese pigment palette (花青 / 藤黄 / 石绿 / 紫棠 / 赭石 …).
+- `BRAND` — official vendor brand colors (Claude orange, GLM blue, OpenAI green…); add an entry to override.
+- `CATS` — category boards shown in the tabbed section.
 
-无需 API Key。站点内置：3 次重试 + 空数据重试（OpenRouter 边缘节点偶发返回 `data:null`）、3 路并发池、120s 会话缓存、失败区块自动沿用上次好数据。
+❓ FAQ
+---
 
-## 免责
+<details>
+<summary>Why do some charts occasionally show stale data?</summary>
+OpenRouter edge nodes sometimes answer <code>200</code> with an empty body. The app retries 3× and falls back to the last good snapshot cached in <code>sessionStorage</code>.
+</details>
+<details>
+<summary>Why is my favorite model missing from a board?</summary>
+Boards show the current top entries (usage top 12, category top 8). A model with near-zero traffic today simply has no bar yet.
+</details>
+<details>
+<summary>Does it need an API key?</summary>
+No. All OpenRouter endpoints used here are public and CORS-enabled.
+</details>
 
-排名反映 OpenRouter 平台真实用量与第三方评测，仅供选型参考。
+📄 License
+---
+
+Rankings reflect real OpenRouter traffic and third-party benchmarks (Artificial Analysis, Design Arena); model names and trademarks belong to their owners. For model selection reference only.
+
+---
+
+**Made with 💙** — [🌐 Live Demo](https://ai-model-rankings.streamlit.app/) · [Issues](https://github.com/Mocas-12/ai-model-rankings/issues)
