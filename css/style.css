@@ -1,101 +1,125 @@
 :root {
-  --bg: #f3efe5;          /* 宣纸 */
-  --card: #fbf9f2;        /* 卡片纸 */
-  --card2: #f5f1e6;       /* 内衬纸 */
-  --line: #e4ddca;
-  --line2: #d3cab4;
-  --ink: #26221b;         /* 浓墨 */
-  --ink2: #6f6a5e;        /* 淡墨 */
-  --ink3: #a29b8a;        /* 灰墨 */
-  --red: #b03a2e;         /* 朱砂 */
-  --blue: #3d5a80;        /* 黛蓝 */
-  --teal: #52796f;        /* 竹青 */
+  --paper: #f4f0e6;       /* 宣纸 */
+  --card: #fbf8f0;
+  --card2: #f6f1e4;
+  --line: #e5dfcd;
+  --line2: #d5ccb6;
+  --jiao: #1c1915;        /* 焦墨 */
+  --nong: #3a352c;        /* 浓墨 */
+  --zhong: #5c5546;       /* 重墨 */
+  --dan: #8d8677;         /* 淡墨 */
+  --qing: #c2bba9;        /* 清墨 */
+  --ink: #26221b;
+  --ink2: #6f6a5e;
+  --ink3: #a29b8a;
+  --red: #a63d2f;         /* 朱砂 */
+  --teal: #52796f;        /* 竹青（淡彩） */
   --gold: #9c6b3f;        /* 赭石 */
-  --radius: 6px;
+  --radius: 4px;
+  --kai: "Kaiti SC", "KaiTi", "STKaiti", serif;
+  --brush: "Ma Shan Zheng", "Kaiti SC", "KaiTi", serif;
+  --serif: Georgia, "Noto Serif SC", "Source Han Serif SC", "SimSun", serif;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
-  background:
-    radial-gradient(900px 420px at 92% -80px, rgba(43, 38, 34, .05), transparent 62%),
-    radial-gradient(760px 400px at -6% 8%, rgba(43, 38, 34, .035), transparent 58%),
-    var(--bg);
+  /* 宣纸肌理（feTurbulence 噪点）+ 两抹淡墨晕 */
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E"),
+    radial-gradient(1000px 460px at 94% -100px, rgba(43, 38, 34, .055), transparent 62%),
+    radial-gradient(760px 420px at -8% 4%, rgba(43, 38, 34, .04), transparent 58%);
+  background-color: var(--paper);
   color: var(--ink);
   font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, -apple-system, sans-serif;
-  line-height: 1.55;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
-::selection { background: rgba(176, 58, 46, .16); }
+::selection { background: rgba(166, 61, 47, .16); }
 .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
 a { color: var(--red); text-decoration: none; }
 a:hover { text-decoration: underline; }
-.kai { font-family: "Kaiti SC", "KaiTi", "STKaiti", "Noto Serif SC", serif; }
+.kai { font-family: var(--kai); }
 
 /* ---------- 顶部加载条 ---------- */
 #loadbar { position: fixed; top: 0; left: 0; height: 2px; width: 0; background: var(--red); z-index: 99; transition: width .4s, opacity .4s; }
 
-/* ---------- 顶栏 ---------- */
+/* ---------- 顶栏（工具行） ---------- */
 .topbar {
   position: sticky; top: 0; z-index: 50;
-  background: rgba(243, 239, 229, .92); backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--line2);
+  background: rgba(244, 240, 230, .92); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
 }
-.topbar-in { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 13px 24px; flex-wrap: wrap; }
-.brand { font-family: Georgia, "Noto Serif SC", "Source Han Serif SC", "SimSun", serif; font-size: 24px; font-weight: 700; letter-spacing: .5px; line-height: 1.1; }
-.brand em { font-style: normal; color: var(--red); }
-.brand-seal {
-  display: inline-block; margin-left: 12px; vertical-align: 5px;
-  background: var(--red); color: #f7f3ea;
-  font-family: "Kaiti SC", "KaiTi", "STKaiti", serif; font-size: 15px; font-weight: 400;
-  line-height: 1; padding: 5px 5px; border-radius: 2px; transform: rotate(-4deg);
-  box-shadow: 0 1px 3px rgba(176, 58, 46, .3);
-}
-.tagline { font-family: "Kaiti SC", "KaiTi", "STKaiti", serif; font-size: 13.5px; color: var(--ink2); letter-spacing: 5px; }
-.topmeta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink2); }
+.topbar-in { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 24px; flex-wrap: wrap; }
 .badge-src { border: 1px solid var(--line2); border-radius: 3px; padding: 3px 10px; color: var(--ink2); background: var(--card); font-size: 12px; }
 .badge-src:hover { color: var(--red); text-decoration: none; border-color: var(--red); }
+.topmeta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink2); }
 .upd b { color: var(--ink); font-weight: 600; }
 .btn-refresh {
   border: 1px solid var(--line2); background: var(--card); color: var(--ink);
-  border-radius: 3px; padding: 5px 14px; cursor: pointer; font-size: 12.5px; transition: .15s;
+  border-radius: 3px; padding: 4px 13px; cursor: pointer; font-size: 12.5px; transition: .15s;
 }
 .btn-refresh:hover { border-color: var(--red); color: var(--red); }
 .btn-refresh.spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ---------- KPI ---------- */
-.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 26px 0 20px; }
-.kpi {
-  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 14px 18px 12px; position: relative; overflow: hidden;
+/* ---------- 画卷头部 ---------- */
+.hero { position: relative; overflow: hidden; padding: 40px 0 8px; }
+.mountains { position: absolute; inset: auto 0 0 0; width: 100%; height: 240px; display: block; }
+.hero-in { position: relative; z-index: 1; }
+.hero-title { display: flex; align-items: flex-start; gap: 18px; margin-bottom: 34px; }
+.brush {
+  font-family: var(--brush); font-weight: 400;
+  font-size: 68px; line-height: .95; letter-spacing: 14px;
+  color: var(--jiao); text-shadow: 0 2px 10px rgba(43, 38, 34, .08);
 }
-.kpi::after { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: linear-gradient(90deg, var(--red) 0 28%, var(--ink) 28% 100%); opacity: .85; }
-.kpi-label { font-size: 12px; color: var(--ink2); }
-.kpi-value { font-size: 23px; font-weight: 800; margin-top: 3px; font-variant-numeric: tabular-nums; letter-spacing: .2px; }
-.kpi-value.kpi-model { font-size: 16.5px; line-height: 1.4; color: var(--blue); }
+.hero-seal {
+  writing-mode: vertical-rl;
+  background: var(--red); color: #f7f3ea;
+  font-family: var(--kai); font-size: 15px; letter-spacing: 5px;
+  padding: 9px 5px; border-radius: 2px; transform: rotate(-3deg);
+  box-shadow: 0 2px 6px rgba(166, 61, 47, .3);
+  margin-top: 8px;
+}
+.hero-sub { align-self: flex-end; padding-bottom: 6px; }
+.tagline { font-family: var(--kai); font-size: 17px; color: var(--ink2); letter-spacing: 7px; }
+.hero-en { font-size: 10px; color: var(--ink3); letter-spacing: 3.5px; margin-top: 8px; text-transform: uppercase; }
+.brushline { display: block; width: 100%; height: 16px; margin-top: 22px; }
+
+/* ---------- KPI ---------- */
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; padding-bottom: 26px; }
+.kpi {
+  background: rgba(251, 248, 240, .78); border-radius: var(--radius);
+  padding: 15px 18px 12px; position: relative; overflow: hidden;
+}
+.kpi::after { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; background: linear-gradient(90deg, var(--red) 0 22%, rgba(43, 38, 34, .5) 22% 100%); }
+.kpi-label { font-family: var(--kai); font-size: 13px; color: var(--ink2); letter-spacing: 1px; }
+.kpi-value { font-size: 24px; font-weight: 800; margin-top: 3px; font-variant-numeric: tabular-nums; letter-spacing: .2px; }
+.kpi-value.kpi-model { font-size: 17px; line-height: 1.4; color: var(--red); font-family: var(--serif); }
 .kpi-sub { font-size: 11.5px; color: var(--ink3); margin-top: 1px; }
 
-/* ---------- 卡片与节奏 ---------- */
+/* ---------- 卡片与留白 ---------- */
 main > .card, .grid2 .card {
-  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 20px 22px 14px; margin-bottom: 20px;
+  background: rgba(251, 248, 240, .85); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 24px 26px 16px; margin-bottom: 28px;
 }
-.card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
-h2 { font-family: Georgia, "Noto Serif SC", "Source Han Serif SC", "SimSun", serif; font-size: 18px; font-weight: 700; display: flex; align-items: center; }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+h2 {
+  font-family: var(--brush); font-weight: 400;
+  font-size: 22px; letter-spacing: 4px; display: flex; align-items: center; color: var(--ink);
+}
 .sec-no {
-  font-family: Georgia, serif; font-size: 11px; font-weight: 700; color: #f7f3ea; letter-spacing: 1px;
-  background: var(--red);
-  padding: 2px 6px; border-radius: 2px; margin-right: 10px; font-variant-numeric: tabular-nums;
-  transform: rotate(-2deg);
+  font-family: var(--kai); font-size: 13px; color: #f7f3ea; letter-spacing: 0;
+  background: var(--red); padding: 3px 6px; border-radius: 2px;
+  margin-right: 12px; transform: rotate(-3deg); line-height: 1.2;
 }
-.h-sub { font-family: "Kaiti SC", "KaiTi", "STKaiti", serif; font-size: 13px; color: var(--ink2); font-weight: 400; margin-left: 10px; letter-spacing: 1px; }
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.grid2 .card { margin-bottom: 20px; }
+.h-sub { font-family: var(--kai); font-size: 13.5px; color: var(--ink3); font-weight: 400; margin-left: 12px; letter-spacing: 2px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.grid2 .card { margin-bottom: 28px; }
 
 .chart { width: 100%; height: 380px; }
 .chart.tall { height: 430px; }
 .chart.sq { height: 330px; }
-.ph { color: var(--ink3); font-size: 13px; padding: 40px 0; text-align: center; }
+.ph { color: var(--ink3); font-size: 13px; padding: 40px 0; text-align: center; font-family: var(--kai); }
 
 /* ---------- Tabs ---------- */
 .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -103,28 +127,28 @@ h2 { font-family: Georgia, "Noto Serif SC", "Source Han Serif SC", "SimSun", ser
   border: 1px solid var(--line2); background: transparent; color: var(--ink2);
   padding: 4px 13px; border-radius: 3px; cursor: pointer; font-size: 12.5px; transition: .15s;
 }
-.tab:hover { color: var(--ink); border-color: var(--ink3); }
-.tab.on { background: var(--ink); color: #f7f3ea; border-color: var(--ink); font-weight: 600; }
+.tab:hover { color: var(--ink); border-color: var(--dan); }
+.tab.on { background: var(--nong); color: #f7f3ea; border-color: var(--nong); font-weight: 600; }
 
 /* ---------- 王者卡片 ---------- */
-.kings { display: grid; grid-template-columns: repeat(auto-fill, minmax(184px, 1fr)); gap: 12px; padding-bottom: 12px; }
+.kings { display: grid; grid-template-columns: repeat(auto-fill, minmax(184px, 1fr)); gap: 14px; padding-bottom: 14px; }
 .king {
-  background: var(--card2); border: 1px solid var(--line); border-radius: 4px;
-  padding: 13px 15px; transition: .15s; display: flex; flex-direction: column; position: relative;
+  background: var(--card2); border: 1px solid var(--line); border-radius: 3px;
+  padding: 14px 16px; transition: .15s; display: flex; flex-direction: column; position: relative;
 }
-.king:hover { border-color: var(--ink3); }
-.king .k-cat { font-size: 12px; color: var(--ink2); display: flex; justify-content: space-between; align-items: center; }
+.king:hover { border-color: var(--dan); }
+.king .k-cat { font-family: var(--kai); font-size: 12.5px; color: var(--ink2); display: flex; justify-content: space-between; align-items: center; letter-spacing: 1px; }
 .king .k-src { font-size: 10px; color: var(--ink3); }
-.king .k-model { font-size: 14.5px; font-weight: 700; margin: 9px 0 3px; line-height: 1.35; min-height: 40px; display: flex; align-items: flex-end; padding-right: 22px; }
+.king .k-model { font-size: 14.5px; font-weight: 700; margin: 9px 0 3px; line-height: 1.35; min-height: 40px; display: flex; align-items: flex-end; padding-right: 24px; }
 .king .k-score { font-size: 12.5px; color: var(--ink2); font-variant-numeric: tabular-nums; }
-.king .k-score b { font-size: 14px; color: var(--ink); }
+.king .k-score b { font-size: 14.5px; color: var(--ink); }
 .king .k-score small { color: var(--ink3); margin-left: 4px; }
-.king.top1 { border-color: rgba(176, 58, 46, .5); }
+.king.top1 { border-color: rgba(166, 61, 47, .5); }
 .king.top1 .k-score b { color: var(--red); }
 .king.top1::after {
   content: "魁"; position: absolute; top: 9px; right: 9px;
   background: var(--red); color: #f7f3ea;
-  font-family: "Kaiti SC", "KaiTi", "STKaiti", serif; font-size: 13px;
+  font-family: var(--kai); font-size: 13px; line-height: 1.2;
   padding: 3px 4px; border-radius: 2px; transform: rotate(6deg);
 }
 .king .k-chip { display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 3px; margin-left: 6px; vertical-align: 2px; }
@@ -132,24 +156,24 @@ h2 { font-family: Georgia, "Noto Serif SC", "Source Han Serif SC", "SimSun", ser
 .k-chip.batch { background: rgba(156, 107, 63, .13); color: var(--gold); }
 
 /* ---------- 维度之最表 ---------- */
-.dimtable { padding-bottom: 12px; overflow-x: auto; }
+.dimtable { padding-bottom: 14px; overflow-x: auto; }
 .dim-t { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .dim-t th {
   text-align: left; font-weight: 600; color: var(--ink3); font-size: 11.5px;
   padding: 6px 12px; border-bottom: 1px solid var(--line2); letter-spacing: 2px;
 }
-.dim-t td { padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.dim-t td { padding: 11px 12px; border-bottom: 1px dashed var(--line); }
 .dim-t tbody tr:last-child td { border-bottom: none; }
 .dim-t tbody tr:hover td { background: rgba(43, 38, 34, .035); }
-.td-cat { font-family: "Kaiti SC", "KaiTi", "STKaiti", serif; font-size: 14.5px; color: var(--ink2); width: 110px; white-space: nowrap; }
+.td-cat { font-family: var(--kai); font-size: 15px; color: var(--ink2); width: 110px; white-space: nowrap; letter-spacing: 1px; }
 .td-model { font-weight: 700; }
 .td-author { color: var(--ink3); font-size: 11px; margin-left: 8px; font-weight: 400; }
 .td-val { color: var(--red); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .td-src, .th-src { color: var(--ink3); font-size: 11px; width: 130px; }
 
 /* ---------- 黑马卡 ---------- */
-.risers { display: grid; grid-template-columns: repeat(auto-fill, minmax(258px, 1fr)); gap: 12px; padding-bottom: 12px; }
-.riser { background: var(--card2); border: 1px solid var(--line); border-radius: 4px; padding: 13px 15px; }
+.risers { display: grid; grid-template-columns: repeat(auto-fill, minmax(258px, 1fr)); gap: 14px; padding-bottom: 14px; }
+.riser { background: var(--card2); border: 1px solid var(--line); border-radius: 3px; padding: 13px 15px; }
 .riser .r-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .riser .r-name { font-weight: 700; font-size: 13.5px; }
 .riser .r-grow { color: var(--red); font-weight: 800; font-size: 13.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -161,15 +185,16 @@ h2 { font-family: Georgia, "Noto Serif SC", "Source Han Serif SC", "SimSun", ser
 }
 
 /* ---------- 新模型 ---------- */
-.newmodels { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; padding-bottom: 12px; }
-.nm { background: var(--card2); border: 1px solid var(--line); border-radius: 4px; padding: 11px 14px; font-size: 12.5px; }
+.newmodels { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; padding-bottom: 14px; }
+.nm { background: var(--card2); border: 1px solid var(--line); border-radius: 3px; padding: 11px 14px; font-size: 12.5px; }
 .nm .n-name { font-weight: 700; font-size: 13px; }
 .nm .n-meta { color: var(--ink3); margin-top: 4px; display: flex; gap: 8px; flex-wrap: wrap; font-size: 11.5px; }
 .nm .n-meta .n-mod { color: var(--red); }
 
 /* ---------- 页脚 ---------- */
-.foot { padding: 24px 24px 44px; color: var(--ink3); font-size: 12px; text-align: center; border-top: 1px solid var(--line); margin-top: 8px; }
+.foot { padding: 20px 24px 46px; color: var(--ink3); font-size: 12px; text-align: center; }
 .foot p { margin-bottom: 6px; }
+.foot .kai { font-size: 13px; color: var(--ink2); letter-spacing: 2px; }
 
 /* ---------- 骨架 ---------- */
 .skeleton { position: relative; }
@@ -185,7 +210,8 @@ h2 { font-family: Georgia, "Noto Serif SC", "Source Han Serif SC", "SimSun", ser
 @media (max-width: 900px) {
   .kpis { grid-template-columns: repeat(2, 1fr); }
   .grid2 { grid-template-columns: 1fr; }
-  .brand { font-size: 20px; }
+  .brush { font-size: 46px; letter-spacing: 8px; }
+  .hero-title { gap: 12px; }
   .topmeta { gap: 8px; }
   .td-src, .th-src { display: none; }
 }

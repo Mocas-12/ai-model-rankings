@@ -32,10 +32,10 @@ const REFRESH_SEC = 300;
 
 /* ---------------- 小工具 ---------------- */
 const $ = s => document.querySelector(s);
-const PAL = ['#b03a2e','#26221b','#3d5a80','#52796f','#9c6b3f','#6d5a6e','#8a825c','#4a5d6e'];
-const TREND_PAL = ['#b03a2e', '#26221b', '#3d5a80', '#52796f', '#9c6b3f', '#6d5a6e'];
+const PAL = ['#b03a2e','#26221b','#5c5546','#52796f','#9c6b3f','#8d8677','#8a825c','#4a5d6e'];
+const TREND_PAL = ['#1c1915', '#b03a2e', '#5c5546', '#4a6b6a', '#8d8677', '#9c6b3f'];
 const rampColor = t => {
-  const A = [43, 38, 34], B = [224, 218, 203];
+  const A = [28, 25, 21], B = [224, 218, 203];
   return 'rgb(' + A.map((v, i) => Math.round(v+(B[i]-v)*t)).join(',') + ')';
 };
 const TIP = { backgroundColor:'#fffdf7', borderColor:'#d3cab4', textStyle:{color:'#26221b',fontSize:12}, confine:true, extraCssText:'box-shadow:0 4px 16px rgba(60,50,30,.12);' };
@@ -475,7 +475,7 @@ function renderSpendTask() {
     legend: { orient:'vertical', right:0, top:'middle', textStyle:{ color:'#5f594c', fontSize:11 }, itemWidth:10, itemHeight:10 },
     series: [{
       type:'pie', center:['32%', '52%'], radius:['48%', '72%'],
-      data: rows.map((r, i) => ({ name:TASK_CN[r.key] || r.label || r.key, value:+(r.spendShare*100).toFixed(1), itemStyle:{ color:TREND_PAL[(i+1)%TREND_PAL.length] } })),
+      data: rows.map((r, i) => ({ name:TASK_CN[r.key] || r.label || r.key, value:+(r.spendShare*100).toFixed(1), itemStyle:{ color:['#3a352c', '#6f6a5e', '#a9a291', '#cfc7b4'][i%4] } })),
       label: { show:true, position:'center', formatter:'30 天\n任务花费', fontSize:14, color:'#6b6455', lineHeight:20 },
       itemStyle: { borderColor:'#ffffff', borderWidth:2, borderRadius:4 },
       emphasis: { scaleSize:5 },

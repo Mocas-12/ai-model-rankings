@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LLMRANKS · AI 大模型实时战力榜</title>
-<meta name="description" content="基于 OpenRouter 实时数据的 AI 大模型排名：用量总榜、智能指数、编程、智能体、网页开发等多维度战力对比，一看就知道当下哪个模型哪方面最强。">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏆%3C/text%3E%3C/svg%3E">
+<title>墨榜 · AI 大模型实时战力谱</title>
+<meta name="description" content="基于 OpenRouter 实时数据的 AI 大模型水墨战力谱：用量总榜、分项王者、维度之最、性价比与速度，一看就知道当下哪个模型哪方面最强。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='12' fill='%23b03a2e'/%3E%3Ctext x='50' y='72' font-size='58' text-anchor='middle' fill='%23f7f3ea' font-family='KaiTi'%3E%E6%A6%9C%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@600&display=swap">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -13,12 +14,8 @@
 
 <header class="topbar">
   <div class="wrap topbar-in">
-    <div class="brand-block">
-      <div class="brand">LLM<em>RANKS</em><span class="brand-seal">榜</span></div>
-      <div class="tagline">AI 大模型实时战力榜</div>
-    </div>
+    <a class="badge-src" href="https://openrouter.ai/rankings" target="_blank" rel="noopener">数据源 · OpenRouter</a>
     <div class="topmeta">
-      <a class="badge-src" href="https://openrouter.ai/rankings" target="_blank" rel="noopener">数据源 · OpenRouter</a>
       <span class="upd">更新于 <b id="updated-time">--</b>（北京时间）</span>
       <span class="upd">自动刷新 <b id="countdown">--</b></span>
       <button id="btn-refresh" class="btn-refresh" title="立即刷新数据">⟳ 刷新</button>
@@ -26,20 +23,41 @@
   </div>
 </header>
 
-<main class="wrap">
+<section class="hero">
+  <svg class="mountains" viewBox="0 0 1440 250" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <circle cx="1148" cy="66" r="30" fill="rgba(166,61,47,.8)"/>
+    <path d="M0 250 L0 196 L110 148 L196 200 L318 96 L430 186 L560 128 L688 196 L820 150 L940 198 L1064 158 L1188 202 L1310 172 L1440 196 L1440 250 Z" fill="rgba(43,38,34,.10)"/>
+    <path d="M0 250 L0 226 L170 178 L320 222 L470 168 L640 218 L810 176 L980 220 L1150 184 L1320 218 L1440 200 L1440 250 Z" fill="rgba(43,38,34,.17)"/>
+    <path d="M0 250 L0 238 L260 214 L520 236 L820 216 L1120 238 L1440 224 L1440 250 Z" fill="rgba(43,38,34,.26)"/>
+  </svg>
+  <div class="wrap hero-in">
+    <div class="hero-title">
+      <h1 class="brush">墨榜</h1>
+      <span class="hero-seal">战力</span>
+      <div class="hero-sub">
+        <p class="tagline">AI 大模型实时战力谱</p>
+        <p class="hero-en">LLM RANKS · POWER OF MODELS · LIVE</p>
+      </div>
+    </div>
+    <div class="kpis" id="kpis">
+      <div class="kpi skeleton"><div class="kpi-label">24h Token 消耗</div><div class="kpi-value">--</div><div class="kpi-sub"></div></div>
+      <div class="kpi skeleton"><div class="kpi-label">24h 请求次数</div><div class="kpi-value">--</div><div class="kpi-sub"></div></div>
+      <div class="kpi skeleton"><div class="kpi-label">活跃模型</div><div class="kpi-value">--</div><div class="kpi-sub"></div></div>
+      <div class="kpi skeleton"><div class="kpi-label">当前用量魁首</div><div class="kpi-value kpi-model">--</div><div class="kpi-sub"></div></div>
+    </div>
+  </div>
+  <svg class="brushline" viewBox="0 0 1200 18" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M6 9 C 200 3 420 14 640 8 C 860 3 1020 13 1194 7" stroke="rgba(43,38,34,.45)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M40 11 C 300 7 600 12 1160 9" stroke="rgba(43,38,34,.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  </svg>
+</section>
 
-  <!-- KPI 概览 -->
-  <section class="kpis" id="kpis">
-    <div class="kpi skeleton"><div class="kpi-label">24h Token 消耗</div><div class="kpi-value">--</div><div class="kpi-sub"></div></div>
-    <div class="kpi skeleton"><div class="kpi-label">24h 请求次数</div><div class="kpi-value">--</div><div class="kpi-sub"></div></div>
-    <div class="kpi skeleton"><div class="kpi-label">活跃模型</div><div class="kpi-value">--</div><div class="kpi-sub"></div></div>
-    <div class="kpi skeleton"><div class="kpi-label">当前用量冠军</div><div class="kpi-value kpi-model">--</div><div class="kpi-sub"></div></div>
-  </section>
+<main class="wrap">
 
   <!-- 用量总榜 -->
   <section class="card">
     <div class="card-head">
-      <h2><span class="sec-no">01</span>用量总榜<span class="h-sub">24 小时真实 Token 消耗 · Top 12</span></h2>
+      <h2><span class="sec-no">壹</span>用量总榜<span class="h-sub">24 小时真实 Token 消耗 · Top 12</span></h2>
       <div class="tabs" id="usage-tabs">
         <button class="tab on" data-metric="tokens">Tokens</button>
         <button class="tab" data-metric="requests">请求次数</button>
@@ -48,46 +66,46 @@
     <div class="chart tall" id="chart-usage"><div class="ph">加载中…</div></div>
   </section>
 
-  <!-- 十项全能王者 -->
+  <!-- 分项王者 -->
   <section class="card">
-      <div class="card-head"><h2><span class="sec-no">02</span>分项王者<span class="h-sub">每个维度当下的 No.1</span></h2></div>
+    <div class="card-head"><h2><span class="sec-no">贰</span>分项王者<span class="h-sub">每个维度当下的 No.1</span></h2></div>
     <div class="kings" id="kings"><div class="ph">加载中…</div></div>
   </section>
 
-  <!-- 能力矩阵 -->
+  <!-- 维度之最 -->
   <section class="card">
-      <div class="card-head"><h2><span class="sec-no">03</span>维度之最<span class="h-sub">每个维度当下最强的模型 · 一眼定位</span></h2></div>
+    <div class="card-head"><h2><span class="sec-no">叁</span>维度之最<span class="h-sub">每个维度当下最强的模型 · 一眼定位</span></h2></div>
     <div class="dimtable" id="dimtable"><div class="ph">加载中…</div></div>
   </section>
 
   <div class="grid2">
     <!-- 性价比 -->
     <section class="card">
-        <div class="card-head"><h2><span class="sec-no">04</span>性价比图<span class="h-sub">单请求成本 vs 智能指数 · 越靠左上越值</span></h2></div>
+      <div class="card-head"><h2><span class="sec-no">肆</span>性价比图<span class="h-sub">单请求成本 vs 智能指数 · 越靠左上越值</span></h2></div>
       <div class="chart sq" id="chart-value"><div class="ph">加载中…</div></div>
     </section>
     <!-- 速度 -->
     <section class="card">
-        <div class="card-head"><h2><span class="sec-no">05</span>速度榜<span class="h-sub">P50 延迟 vs 吞吐 · 气泡=请求量</span></h2></div>
+      <div class="card-head"><h2><span class="sec-no">伍</span>速度榜<span class="h-sub">P50 延迟 vs 吞吐 · 气泡=请求量</span></h2></div>
       <div class="chart sq" id="chart-speed"><div class="ph">加载中…</div></div>
     </section>
   </div>
 
   <!-- 趋势 -->
   <section class="card">
-      <div class="card-head"><h2><span class="sec-no">06</span>30 天用量趋势<span class="h-sub">头部模型每日 Token 消耗 · Top 6</span></h2></div>
+    <div class="card-head"><h2><span class="sec-no">陆</span>30 天用量趋势<span class="h-sub">头部模型每日 Token 消耗 · Top 6</span></h2></div>
     <div class="chart" id="chart-trend"><div class="ph">加载中…</div></div>
   </section>
 
   <div class="grid2">
     <!-- 厂商份额 -->
     <section class="card">
-        <div class="card-head"><h2><span class="sec-no">07</span>厂商份额<span class="h-sub">近 7 天 Token 占比</span></h2></div>
+      <div class="card-head"><h2><span class="sec-no">柒</span>厂商份额<span class="h-sub">近 7 天 Token 占比</span></h2></div>
       <div class="chart sq" id="chart-vendors"><div class="ph">加载中…</div></div>
     </section>
     <!-- 任务花费 -->
     <section class="card">
-        <div class="card-head"><h2><span class="sec-no">08</span>钱花在哪<span class="h-sub">30 天任务花费占比</span></h2></div>
+      <div class="card-head"><h2><span class="sec-no">捌</span>钱花在哪<span class="h-sub">30 天任务花费占比</span></h2></div>
       <div class="chart sq" id="chart-spend"><div class="ph">加载中…</div></div>
     </section>
   </div>
@@ -95,7 +113,7 @@
   <!-- 分类榜 -->
   <section class="card">
     <div class="card-head">
-      <h2><span class="sec-no">09</span>分类用量榜<span class="h-sub" id="cat-sub">最新一天分类消耗 · Top 8</span></h2>
+      <h2><span class="sec-no">玖</span>分类用量榜<span class="h-sub" id="cat-sub">最新一天分类消耗 · Top 8</span></h2>
       <div class="tabs" id="cat-tabs"></div>
     </div>
     <div class="chart tall" id="chart-cat"><div class="ph">加载中…</div></div>
@@ -103,13 +121,13 @@
 
   <!-- 本周黑马 -->
   <section class="card">
-      <div class="card-head"><h2><span class="sec-no">10</span>本周黑马<span class="h-sub">用量周涨幅最大的模型</span></h2></div>
+    <div class="card-head"><h2><span class="sec-no">拾</span>本周黑马<span class="h-sub">用量周涨幅最大的模型</span></h2></div>
     <div class="risers" id="risers"><div class="ph">加载中…</div></div>
   </section>
 
   <!-- 新模型 -->
   <section class="card" id="sec-new" hidden>
-      <div class="card-head"><h2><span class="sec-no">11</span>新上架模型<span class="h-sub">近 14 天登录 OpenRouter</span></h2></div>
+    <div class="card-head"><h2><span class="sec-no">拾壹</span>新上架模型<span class="h-sub">近 14 天登录 OpenRouter</span></h2></div>
     <div class="newmodels" id="newmodels"></div>
   </section>
 
@@ -117,7 +135,7 @@
 
 <footer class="wrap foot">
   <p>数据来自 <a href="https://openrouter.ai/rankings" target="_blank" rel="noopener">openrouter.ai</a> 公开接口（智能/编程/智能体分数来自 Artificial Analysis，网页/可视化等分数来自 Design Arena），每小时随官方更新。</p>
-  <p>排名反映平台真实用量与第三方评测，仅供选型参考 · <span id="foot-time"></span> · LLMRANKS</p>
+  <p class="kai">计白当黑 · 墨分五色 —— 榜如水墨，浓淡随时 · <span id="foot-time"></span></p>
 </footer>
 
 <script src="https://registry.npmmirror.com/echarts/5.6.0/files/dist/echarts.min.js"></script>
