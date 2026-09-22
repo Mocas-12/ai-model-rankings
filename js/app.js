@@ -32,12 +32,17 @@ const REFRESH_SEC = 300;
 
 /* ---------------- 小工具 ---------------- */
 const $ = s => document.querySelector(s);
-const PAL = ['#c74a3c','#ddd6c4','#5c5546','#7a9a8e','#9c6b3f','#8d8677','#8a825c','#4a5d6e'];
-const TREND_PAL = ['#ddd6c4', '#c74a3c', '#a89f88', '#7a9a8e', '#c99a5f', '#8d8677'];
-const rampColor = t => {
-  const A = [224, 218, 203], B = [64, 58, 46];
-  return 'rgb(' + A.map((v, i) => Math.round(v+(B[i]-v)*t)).join(',') + ')';
-};
+const PAL = [
+  '#6f9bc4', // 花青
+  '#e0b04a', // 藤黄
+  '#63a583', // 石绿
+  '#a87ab0', // 紫棠
+  '#c99a5f', // 赭石
+  '#a0a858', // 苔绿
+  '#7ec8c0', // 青碧
+  '#9aa8d4', // 青金
+  '#d4c9a2', // 月白
+];
 const TIP = { backgroundColor:'#26221b', borderColor:'#454036', textStyle:{color:'#ddd6c4',fontSize:12}, confine:true, extraCssText:'box-shadow:0 4px 16px rgba(0,0,0,.45);' };
 const AXIS_C = line => ({ axisLine:{lineStyle:{color:'#454036'}}, axisTick:{show:false}, axisLabel:{color:'#a89f8a',fontSize:11}, splitLine: line?{lineStyle:{color:'#322d25'}}:{show:false} });
 
@@ -271,7 +276,7 @@ function renderUsage() {
     series: [{
       type:'bar', data:vals, barWidth:'56%',
       label: { show:true, position:'right', color:'#a89f8a', fontSize:11, formatter: p => fmtr(p.value) },
-      itemStyle: { borderRadius:[0, 2, 2, 0], color: p => rows[p.dataIndex].variant === 'free' ? '#7a9a8e' : '#d5cdb8' },
+      itemStyle: { borderRadius:[0, 2, 2, 0], color: p => authorColor(authorOf(rows[p.dataIndex].model_permaslug)) },
     }],
   }, { notMerge:true });
 }
@@ -380,7 +385,7 @@ function renderValue() {
     series: [{
       type:'scatter', data,
       symbolSize: d => Math.min(34, 6+Math.sqrt(d[2])/32000),
-      itemStyle: { color: p => labelSet.has(p.name) ? '#c74a3c' : 'rgba(221,214,196,.30)', borderColor:'rgba(221,214,196,.45)', borderWidth: p => labelSet.has(p.name) ? 0 : 1 },
+      itemStyle: { color: p => authorColor(authorOf(p.name)), borderColor:'rgba(221,214,196,.45)', borderWidth: p => labelSet.has(p.name) ? 2 : 1 },
       label: { show:true, fontSize:10.5, color:'#b5ad99', formatter:p => labelSet.has(p.name) ? labTxt(p.name) : '' },
       labelLayout: { hideOverlap:true, moveOverlap:'shiftY' },
       emphasis: { scale:1.15 },
@@ -409,7 +414,7 @@ function renderSpeed() {
       type:'scatter',
       data: rows.map(r => ({ value:[r.p50_latency, r.p50_throughput, r.request_count], name:r.slug,
         label:{ position: r.p50_throughput >= tMax-8 ? 'bottom' : 'top' },
-        itemStyle:{ color: labelSet.has(r.slug) ? '#c74a3c' : 'rgba(221,214,196,.30)', borderColor:'rgba(221,214,196,.45)', borderWidth: labelSet.has(r.slug) ? 0 : 1 } })),
+        itemStyle:{ color: authorColor(authorOf(r.slug)), borderColor: labelSet.has(r.slug) ? '#c74a3c' : 'rgba(221,214,196,.45)', borderWidth: labelSet.has(r.slug) ? 2 : 1 } })),
       symbolSize: d => 7+Math.sqrt(d[2]/maxReq)*22,
       label: { show:true, fontSize:10.5, color:'#b5ad99', formatter:p => labelSet.has(p.name) ? shortName(p.name).replace(/\s*\([^)]*\)/g, '').slice(0, 18) : '' },
       labelLayout: { hideOverlap:true, moveOverlap:'shiftY' },
@@ -435,10 +440,10 @@ function renderTrend() {
     grid: { left:10, right:20, top:38, bottom:6, containLabel:true },
     xAxis: Object.assign({ type:'category', boundaryGap:false, data:dates }, AXIS_C(true)),
     yAxis: Object.assign(AXIS_C(true), { type:'value', axisLabel:{ color:'#a89f8a', fontSize:11, formatter:fmtTok } }),
-    series: top.map((s, i) => ({
+    series: top.map(s => ({
       name: shortName(s), type:'line', smooth:true, showSymbol:false,
       data: rows.map(d => d.ys[s] || null),
-      lineStyle:{ width:1.8, color:TREND_PAL[i%TREND_PAL.length] }, itemStyle:{ color:TREND_PAL[i%TREND_PAL.length] },
+      lineStyle:{ width:1.8, color:authorColor(authorOf(s)) }, itemStyle:{ color:authorColor(authorOf(s)) },
       emphasis:{ focus:'series' },
     })),
   }, { notMerge:true });
@@ -457,7 +462,7 @@ function renderVendors() {
     legend: { orient:'vertical', right:0, top:'middle', textStyle:{ color:'#b5ad99', fontSize:11 }, itemWidth:10, itemHeight:10 },
     series: [{
       type:'pie', center:['32%', '52%'], radius:['48%', '72%'],
-      data: rows.map((r, i) => ({ name:authorName(r.author), value:r.weeklyTokens, itemStyle:{ color:rampColor(i/Math.max(rows.length-1, 1)) } })),
+      data: rows.map(r => ({ name:authorName(r.author), value:r.weeklyTokens, itemStyle:{ color:authorColor(r.author) } })),
       label: { show:true, position:'center', formatter:'厂商\n格局', fontSize:14, color:'#a89f8a', lineHeight:20 },
       itemStyle: { borderColor:'#1d1a15', borderWidth:2, borderRadius:4 },
       emphasis: { scaleSize:5 },
@@ -475,7 +480,7 @@ function renderSpendTask() {
     legend: { orient:'vertical', right:0, top:'middle', textStyle:{ color:'#b5ad99', fontSize:11 }, itemWidth:10, itemHeight:10 },
     series: [{
       type:'pie', center:['32%', '52%'], radius:['48%', '72%'],
-      data: rows.map((r, i) => ({ name:TASK_CN[r.key] || r.label || r.key, value:+(r.spendShare*100).toFixed(1), itemStyle:{ color:['#d5cdb8', '#9a917c', '#6e675a', '#4a4438'][i%4] } })),
+      data: rows.map((r, i) => ({ name:TASK_CN[r.key] || r.label || r.key, value:+(r.spendShare*100).toFixed(1), itemStyle:{ color:PAL[(i+1)%PAL.length] } })),
       label: { show:true, position:'center', formatter:'30 天\n任务花费', fontSize:14, color:'#a89f8a', lineHeight:20 },
       itemStyle: { borderColor:'#1d1a15', borderWidth:2, borderRadius:4 },
       emphasis: { scaleSize:5 },
@@ -520,7 +525,7 @@ function renderCat() {
     series: [{
       type:'bar', data:rows.map(r => r[1]), barWidth:'56%',
       label: { show:true, position:'right', color:'#a89f8a', fontSize:11, formatter:p => fmtr(p.value) },
-      itemStyle: { borderRadius:[0, 2, 2, 0], color:'#d5cdb8' },
+      itemStyle: { borderRadius:[0, 2, 2, 0], color: p => authorColor(authorOf(rows[p.dataIndex][0])) },
     }],
   }, { notMerge:true });
 }
