@@ -1,10 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96">
-  <rect width="96" height="96" rx="14" fill="#1d1a15"/>
-  <path d="M0 82 L14 70 L26 79 L40 62 L54 76 L68 66 L82 77 L96 70 L96 96 L0 96 Z" fill="#e8e2d2" opacity="0.10"/>
-  <path d="M0 88 L18 80 L38 89 L60 82 L84 88 L96 84 L96 96 L0 96 Z" fill="#e8e2d2" opacity="0.18"/>
-  <g transform="rotate(-3 48 48)">
-    <rect x="22" y="22" width="52" height="52" rx="5" fill="#c74a3c"/>
-    <text x="48" y="63" font-size="34" text-anchor="middle" dominant-baseline="middle"
-          font-family="Kaiti SC, KaiTi, STKaiti, serif" fill="#f7f3ea">榜</text>
+  <rect width="96" height="96" rx="12" fill="#f2ede0"/>
+  <circle cx="66" cy="30" r="10" fill="#bf3d2f"/>
+  <path d="M0 62 L10 48 L22 58 L36 40 L52 60 L66 50 L80 62 L96 54 L96 96 L0 96 Z" fill="#8d8677" opacity="0.45"/>
+  <path d="M0 74 L16 62 L34 76 L52 60 L72 78 L96 66 L96 96 L0 96 Z" fill="#55503f" opacity="0.65"/>
+  <path d="M0 84 L20 76 L44 88 L70 80 L96 88 L96 96 L0 96 Z" fill="#2b2620" opacity="0.85"/>
+  <g transform="rotate(3 70 70)">
+    <rect x="52" y="54" width="34" height="34" rx="3" fill="#b03a2e"/>
+    <text x="69" y="71" font-size="20" text-anchor="middle" dominant-baseline="central"
+          font-family="Kaiti SC, KaiTi, STKaiti, serif" fill="#f2ede0">榜</text>
   </g>
 </svg>
