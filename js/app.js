@@ -47,7 +47,6 @@ const TIP = { backgroundColor:'#26221b', borderColor:'#454036', textStyle:{color
 const AXIS_C = line => ({ axisLine:{lineStyle:{color:'#454036'}}, axisTick:{show:false}, axisLabel:{color:'#a89f8a',fontSize:11}, splitLine: line?{lineStyle:{color:'#322d25'}}:{show:false} });
 
 const fmtTok  = n => n >= 1e12 ? (n/1e12).toFixed(2)+' 万亿' : n >= 1e8 ? (n/1e8).toFixed(1)+' 亿' : n >= 1e4 ? (n/1e4).toFixed(1)+' 万' : String(Math.round(n));
-const fmtTokS = n => n >= 1e12 ? (n/1e12).toFixed(1)+'万亿' : n >= 1e8 ? (n/1e8).toFixed(0)+'亿' : fmtTok(n);
 const fmtReq  = n => n >= 1e8 ? (n/1e8).toFixed(2)+'亿' : n >= 1e4 ? (n/1e4).toFixed(1)+'万' : String(Math.round(n));
 const fmtUsd  = n => n >= 1 ? '$'+n.toFixed(2) : '$'+n.toFixed(4);
 const bjTime  = () => new Date().toLocaleString('zh-CN', { timeZone:'Asia/Shanghai', hour12:false });
@@ -97,8 +96,8 @@ const baseSlug = s => String(s||'').split(':')[0].replace(/-(19|20)\d{6}.*$/, ''
 /* ---------------- 全局数据 ---------------- */
 const D = { usage:[], bench:null, trend:[], disc:null, spend:null, perf:[], cats:{}, catalog:null };
 if (typeof window !== 'undefined') window.__D = D;
-const nameIdx = { base2aa:{}, base2da:{}, cost:{}, wip:{}, cat2name:{} };   // 由 bench 填充
-let chartInstances = {};
+const nameIdx = { base2aa:{}, base2da:{}, cost:{} };   // 由 bench 填充
+const chartInstances = {};
 let usageMetric = 'tokens';
 let activeCat = 'prog';
 let countdown = REFRESH_SEC;
@@ -125,8 +124,7 @@ function nameOf(slug) {
   const pretty = toks.map(t => /^\d/.test(t) || /[.\d]/.test(t) ? t.toUpperCase() : t.charAt(0).toUpperCase()+t.slice(1)).join(' ');
   return (rest.length ? authorName(auth)+' ' : '') + (pretty || slug);
 }
-function authorOf(slug) { return String(slug).includes('/') ? String(slug).split('/')[0] : ''; }
-const shortName = nameOf;
+const authorOf = slug => String(slug).includes('/') ? String(slug).split('/')[0] : '';
 
 /* ---------------- 加载 ---------------- */
 function unwrap(j) { const d = j && j.data !== undefined ? j.data : j; return Array.isArray(d) ? d : (d && d.data !== undefined ? d.data : d); }
@@ -215,7 +213,6 @@ function prepareBench() {
       nameIdx.base2aa[base][k] = { score:m.score, name };
     });
   });
-  nameIdx.percentile = aa.percentilesBySlug || {};
   nameIdx.base2da = {};
   const da = b.daData || {};
   Object.keys(da).forEach(k => {
@@ -226,12 +223,6 @@ function prepareBench() {
     });
   });
   nameIdx.cost = b.costPerRequest || {};
-  nameIdx.wip  = b.weightedInputPrices || {};
-  nameIdx.base2cost = {};
-  Object.entries(nameIdx.cost).forEach(([k, v]) => {
-    const kb = baseSlug(k);
-    if (nameIdx.base2cost[kb] == null || v < nameIdx.base2cost[kb]) nameIdx.base2cost[kb] = v;
-  });
 }
 
 /* catalog 懒加载 → 名称升级后重渲染 */
@@ -279,7 +270,7 @@ function renderKPI() {
   cards[1].querySelector('.kpi-sub').textContent = '≈ '+fmtReq(req/86400)+' 次/秒';
   cards[2].classList.remove('skeleton'); cards[2].querySelector('.kpi-value').textContent = bases.size;
   cards[2].querySelector('.kpi-sub').textContent = '24h 内有调用的模型';
-  cards[3].classList.remove('skeleton'); cards[3].querySelector('.kpi-value').textContent = shortName(top.model_permaslug);
+  cards[3].classList.remove('skeleton'); cards[3].querySelector('.kpi-value').textContent = nameOf(top.model_permaslug);
   cards[3].querySelector('.kpi-sub').textContent = authorName(authorOf(top.model_permaslug))+' · '+fmtTok(top.total_prompt_tokens+top.total_completion_tokens);
 }
 
@@ -289,7 +280,7 @@ function renderUsage() {
   const byTok = r => r.total_prompt_tokens + r.total_completion_tokens;
   const rows = [...D.usage].sort((a, b) => (usageMetric === 'tokens' ? byTok(b)-byTok(a) : (b.count||0)-(a.count||0))).slice(0, 12);
   const total = D.usage.reduce((s, r) => s + byTok(r), 0);
-  const names = rows.map(r => shortName(r.model_permaslug) + (r.variant === 'free' ? ' ·免费' : r.variant === 'batch' ? ' ·batch' : ''));
+  const names = rows.map(r => nameOf(r.model_permaslug) + (r.variant === 'free' ? ' ·免费' : r.variant === 'batch' ? ' ·batch' : ''));
   const vals  = rows.map(r => usageMetric === 'tokens' ? byTok(r) : (r.count||0));
   const fmtr  = usageMetric === 'tokens' ? fmtTok : fmtReq;
   c.setOption({
@@ -400,7 +391,7 @@ function renderValue() {
     .concat([...data].sort((a, b) => a.value[0]-b.value[0]).slice(0, 3).map(d => d.name)));
   // 顶部点的标签放下方，避免被画布上缘裁剪
   data.forEach((d, i) => { if (pts[i].score >= yMax-4) d.label = { position:'bottom' }; });
-  const labTxt = s => shortName(s).replace(/\s*\([^)]*\)/g, '').slice(0, 18);
+  const labTxt = s => nameOf(s).replace(/\s*\([^)]*\)/g, '').slice(0, 18);
   c.setOption({
     tooltip: Object.assign({ formatter(p) {
       const v = p.value;
@@ -444,7 +435,7 @@ function renderSpeed() {
         label:{ position: r.p50_throughput >= tMax-8 ? 'bottom' : 'top' },
         itemStyle:{ color: authorColor(authorOf(r.slug)), borderColor: labelSet.has(r.slug) ? '#c74a3c' : 'rgba(221,214,196,.45)', borderWidth: labelSet.has(r.slug) ? 2 : 1 } })),
       symbolSize: d => 7+Math.sqrt(d[2]/maxReq)*22,
-      label: { show:true, fontSize:10.5, color:'#b5ad99', formatter:p => labelSet.has(p.name) ? shortName(p.name).replace(/\s*\([^)]*\)/g, '').slice(0, 18) : '' },
+      label: { show:true, fontSize:10.5, color:'#b5ad99', formatter:p => labelSet.has(p.name) ? nameOf(p.name).replace(/\s*\([^)]*\)/g, '').slice(0, 18) : '' },
       labelLayout: { hideOverlap:true, moveOverlap:'shiftY' },
     }],
   }, { notMerge:true });
@@ -469,7 +460,7 @@ function renderTrend() {
     xAxis: Object.assign({ type:'category', boundaryGap:false, data:dates }, AXIS_C(true)),
     yAxis: Object.assign(AXIS_C(true), { type:'value', axisLabel:{ color:'#a89f8a', fontSize:11, formatter:fmtTok } }),
     series: top.map(s => ({
-      name: shortName(s), type:'line', smooth:true, showSymbol:false,
+      name: nameOf(s), type:'line', smooth:true, showSymbol:false,
       data: rows.map(d => d.ys[s] || null),
       lineStyle:{ width:1.8, color:authorColor(authorOf(s)) }, itemStyle:{ color:authorColor(authorOf(s)) },
       emphasis:{ focus:'series' },
@@ -549,7 +540,7 @@ function renderCat() {
     } }, TIP),
     grid: { left:8, right:90, top:10, bottom:10, containLabel:true },
     xAxis: Object.assign(AXIS_C(true), { type:'value', axisLabel:{ color:'#a89f8a', fontSize:11, formatter:fmtr } }),
-    yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:rows.map(r => shortName(r[0])), axisLabel:{ color:'#ddd6c4', fontSize:12.5, width:170, overflow:'truncate' } }),
+    yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:rows.map(r => nameOf(r[0])), axisLabel:{ color:'#ddd6c4', fontSize:12.5, width:170, overflow:'truncate' } }),
     series: [{
       type:'bar', data:rows.map(r => r[1]), barWidth:'56%',
       label: { show:true, position:'right', color:'#a89f8a', fontSize:11, formatter:p => fmtr(p.value) },
@@ -578,7 +569,7 @@ function renderRisers() {
   el.innerHTML = items.map(x => {
     const g = x.changePercent >= 0 ? '+'+(x.changePercent*100).toFixed(0)+'%' : (x.changePercent*100).toFixed(0)+'%';
     return `<div class="riser">
-      <div class="r-head"><span class="r-name">${esc(shortName(x.variantPermaslug))}<span class="r-tag">${x.tag}</span></span>
+      <div class="r-head"><span class="r-name">${esc(nameOf(x.variantPermaslug))}<span class="r-tag">${x.tag}</span></span>
       <span class="r-grow">${g}</span></div>
       <div class="r-tok">周 Token ${fmtTok(x.weeklyTokens)} · 上周 ${fmtTok(x.prevWeeklyTokens || 0)}</div>
       ${sparkline(x.series || x.dailySeries || [], '#c74a3c')}
