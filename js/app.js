@@ -63,7 +63,35 @@ const AUTHORS = {
   thudm:'THUDM', nexai:'Nex AI', 'stealth':'Stealth', sakana:'Sakana AI', kwaivgi:'Kuaishou',
 };
 const authorName  = a => AUTHORS[a] || (a ? a.charAt(0).toUpperCase()+a.slice(1) : '');
-const authorColor = a => { let h=0; for (const c of String(a)) h=(h*31+c.charCodeAt(0))>>>0; return PAL[h%PAL.length]; };
+/* 真实品牌色：图表里的厂商颜色与其官方识别色一致 */
+const BRAND = {
+  anthropic:'#d97757',  // Claude 橘
+  'z-ai':'#4d7cfe',     // 智谱 GLM 蓝
+  deepseek:'#5a7dff',   // DeepSeek 蓝
+  openai:'#10a37f',     // OpenAI 绿
+  google:'#4285f4',     // Google 蓝
+  'x-ai':'#b8bfca',     // xAI 银灰
+  meta:'#4a8cf0',       // Meta 蓝
+  qwen:'#8b5cf6',       // 通义 紫
+  mistralai:'#fa6c3c',  // Mistral 橙
+  moonshotai:'#6b7cff', // Kimi 蓝
+  minimax:'#e05a6d',    // MiniMax 红
+  bytedance:'#3c8cff',  // 豆包 蓝
+  tencent:'#5a6cf0',    // 混元 蓝紫
+  baidu:'#4a63e8',      // 文心 蓝
+  nvidia:'#76b900',     // NVIDIA 绿
+  microsoft:'#00a4ef',  // 微软蓝
+  amazon:'#ff9900',     // Amazon 橙
+  xiaomi:'#ff6900',     // 小米橙
+  alibaba:'#ff8a00',    // 阿里橙
+  perplexity:'#3fa8a0', // Perplexity 青
+};
+const authorColor = a => {
+  if (BRAND[a]) return BRAND[a];
+  let h = 0;
+  for (const c of String(a)) h = (h*31+c.charCodeAt(0))>>>0;
+  return PAL[h%PAL.length];
+};
 const baseSlug = s => String(s||'').split(':')[0].replace(/-(19|20)\d{6}.*$/, '');
 
 /* ---------------- 全局数据 ---------------- */
@@ -521,7 +549,7 @@ function renderCat() {
     } }, TIP),
     grid: { left:8, right:90, top:10, bottom:10, containLabel:true },
     xAxis: Object.assign(AXIS_C(true), { type:'value', axisLabel:{ color:'#a89f8a', fontSize:11, formatter:fmtr } }),
-    yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:rows.map(r => shortName(r[0])), axisLabel:{ color:'#211d16', fontSize:12, width:170, overflow:'truncate' } }),
+    yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:rows.map(r => shortName(r[0])), axisLabel:{ color:'#ddd6c4', fontSize:12.5, width:170, overflow:'truncate' } }),
     series: [{
       type:'bar', data:rows.map(r => r[1]), barWidth:'56%',
       label: { show:true, position:'right', color:'#a89f8a', fontSize:11, formatter:p => fmtr(p.value) },
