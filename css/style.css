@@ -61,6 +61,12 @@ a:hover { text-decoration: underline; }
 
 /* ---------- 画卷头部 ---------- */
 .hero { position: relative; overflow: hidden; padding: 40px 0 8px; }
+.sun {
+  position: absolute; right: 2.5%; bottom: 148px;
+  width: 76px; height: 76px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #d66355, #b03a2e 72%);
+  box-shadow: 0 0 46px rgba(199, 74, 60, .22);
+}
 .mountains { position: absolute; inset: auto 0 0 0; width: 100%; height: 250px; display: block; }
 .hero-in { position: relative; z-index: 1; }
 .hero-title { display: flex; align-items: flex-start; gap: 18px; margin-bottom: 34px; }
@@ -220,4 +226,5 @@ h2 {
   .hero-title { gap: 12px; }
   .topmeta { gap: 8px; }
   .td-src, .th-src { display: none; }
+  .sun { width: 54px; height: 54px; right: 5%; bottom: 150px; }
 }
