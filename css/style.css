@@ -136,18 +136,18 @@ h2 {
 .king:hover { border-color: var(--txt3); }
 .king .k-cat { font-family: var(--kai); font-size: 12.5px; color: var(--txt2); display: flex; justify-content: space-between; align-items: center; letter-spacing: 1px; }
 .king .k-src { font-size: 10px; color: var(--txt3); }
-.king .k-model { font-size: 14.5px; font-weight: 700; margin: 9px 0 3px; line-height: 1.35; min-height: 40px; display: flex; align-items: flex-end; padding-right: 24px; }
+.king .k-model { font-size: 14.5px; font-weight: 700; margin: 9px 0 3px; line-height: 1.35; min-height: 40px; display: flex; align-items: flex-end; }
 .king .k-score { font-size: 12.5px; color: var(--txt2); font-variant-numeric: tabular-nums; }
 .king .k-score b { font-size: 14.5px; color: var(--txt); }
 .king .k-score small { color: var(--txt3); margin-left: 4px; }
 .king.top1 { border-color: rgba(199, 74, 60, .55); }
 .king.top1 .k-score b { color: var(--red-bright); }
 .king.top1::after {
-  content: "魁"; position: absolute; top: 9px; right: 9px;
+  content: "魁"; position: absolute; top: -10px; right: -8px;
   background: var(--red); color: #f7f3ea;
   font-family: var(--kai); font-size: 13px; line-height: 1.2;
-  padding: 3px 4px; border-radius: 2px; transform: rotate(6deg);
-  box-shadow: 0 2px 8px rgba(199, 74, 60, .35);
+  padding: 3px 5px; border-radius: 2px; transform: rotate(8deg);
+  box-shadow: 0 2px 8px rgba(199, 74, 60, .45);
 }
 .king .k-chip { display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 3px; margin-left: 6px; vertical-align: 2px; }
 .k-chip.free { background: rgba(122, 154, 142, .15); color: var(--teal); }
