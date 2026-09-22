@@ -163,7 +163,15 @@ h2 {
 .dim-t td { padding: 11px 12px; border-bottom: 1px dashed var(--line); }
 .dim-t tbody tr:last-child td { border-bottom: none; }
 .dim-t tbody tr:hover td { background: rgba(221, 214, 196, .04); }
-.td-cat { font-family: var(--kai); font-size: 15px; color: var(--txt2); width: 110px; white-space: nowrap; letter-spacing: 1px; }
+.td-cat {
+  font-family: var(--brush); font-size: 19px; color: var(--txt);
+  width: 128px; white-space: nowrap; letter-spacing: 3px;
+  position: relative; padding-left: 16px;
+}
+.td-cat::before {
+  content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 18px; background: var(--red); border-radius: 1px;
+}
 .td-model { font-weight: 700; }
 .td-author { color: var(--txt3); font-size: 11px; margin-left: 8px; font-weight: 400; }
 .td-val { color: var(--red-bright); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
