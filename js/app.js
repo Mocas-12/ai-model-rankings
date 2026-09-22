@@ -638,4 +638,18 @@ $('#foot-time').textContent = bjTime();
 
 fetchAll(false).then(() => lazyCatalog());
 if (typeof window !== 'undefined') window.__render = () => { prepareBench(); renderAll(); };
+
+/* Streamlit 内嵌时把 iframe 撑到页面真实高度（sandbox 带 allow-same-origin，可直接改 frameElement） */
+if (typeof window !== 'undefined' && window.parent !== window) {
+  const fitFrame = () => {
+    try {
+      const fe = window.frameElement;
+      const h = document.body.scrollHeight;
+      if (fe && h > 600) fe.style.height = (h + 40) + 'px';
+    } catch (e) {}
+  };
+  window.addEventListener('load', fitFrame);
+  window.addEventListener('resize', fitFrame);
+  setInterval(fitFrame, 1500);
+}
 })();

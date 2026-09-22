@@ -35,6 +35,25 @@ OpenRouter 所有引用接口均返回 `access-control-allow-origin: *`，直接
 
 ## 部署
 
+### Streamlit Community Cloud（推荐，已就绪）
+
+仓库已含 Streamlit 入口，直接部署：
+
+1. Fork / 使用本仓库，登录 [share.streamlit.io](https://share.streamlit.io)
+2. New app → 选择仓库 `Mocas-12/ai-model-rankings`、分支 `main`、**主文件 `app.py`**
+3. 点 Deploy，几十秒后即得 `https://xxx.streamlit.app`
+
+本地预览 Streamlit 版：
+
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+`app.py` 会把水墨页面作为全宽组件内嵌（自动按真实内容撑高、隐藏 Streamlit 界面元素），`.streamlit/config.toml` 已配好配套暗色主题。
+
+### 其他静态托管
+
 任意静态托管即可（Cloudflare Pages / Vercel / GitHub Pages）：把整个目录拖上去就行，无需环境变量、无需 Serverless 函数。
 
 ## 接口清单
