@@ -1,0 +1,11 @@
+{
+  "name": "ai-model-rankings",
+  "private": true,
+  "description": "LLMRANKS 大模型战力榜（纯静态站）",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}
