@@ -77,6 +77,7 @@ flowchart LR
 ```
 ai-model-rankings/
 ├── app.py                  # Streamlit entry: embeds the page full-width
+├── build.py                # index.html → Streamlit inline rewrite (tested in CI)
 ├── requirements.txt        # streamlit only
 ├── .streamlit/config.toml  # dark silk theme for Streamlit chrome
 ├── index.html              # the page itself

@@ -516,10 +516,10 @@ const CATS = [
   { key:'video',  label:'视频生成', unit:'小时' },
 ];
 function renderCatTabs() {
-  $('#cat-tabs').innerHTML = CATS.map(c2 => `<button class="tab${c2.key === activeCat ? ' on' : ''}" data-cat="${c2.key}">${c2.label}</button>`).join('');
+  $('#cat-tabs').innerHTML = CATS.map(c2 => `<button class="tab${c2.key === activeCat ? ' on' : ''}" data-cat="${c2.key}" aria-pressed="${c2.key === activeCat}">${c2.label}</button>`).join('');
   $('#cat-tabs').querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => {
     activeCat = btn.dataset.cat;
-    $('#cat-tabs').querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b === btn));
+    $('#cat-tabs').querySelectorAll('.tab').forEach(b => { b.classList.toggle('on', b === btn); b.setAttribute('aria-pressed', b === btn); });
     renderCat();
   }));
 }
@@ -621,7 +621,7 @@ if (typeof document.fonts !== 'undefined') document.fonts.ready.then(() => {
 
 $('#usage-tabs').querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => {
   usageMetric = btn.dataset.metric;
-  $('#usage-tabs').querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b === btn));
+  $('#usage-tabs').querySelectorAll('.tab').forEach(b => { b.classList.toggle('on', b === btn); b.setAttribute('aria-pressed', b === btn); });
   renderUsage();
 }));
 $('#btn-refresh').addEventListener('click', () => { countdown = REFRESH_SEC; fetchAll(true); });
@@ -630,6 +630,7 @@ let rsz;
 window.addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => Object.values(chartInstances).forEach(c => c.resize()), 200); });
 
 setInterval(() => {
+  if (document.hidden) return;   // 后台标签页不倒数不空转
   countdown--;
   $('#countdown').textContent = countdown > 0 ? Math.floor(countdown/60)+':'+String(countdown%60).padStart(2, '0') : '刷新中…';
   if (countdown <= 0) { countdown = REFRESH_SEC; fetchAll(true); }
@@ -650,6 +651,6 @@ if (typeof window !== 'undefined' && window.parent !== window) {
   };
   window.addEventListener('load', fitFrame);
   window.addEventListener('resize', fitFrame);
-  setInterval(fitFrame, 1500);
+  setInterval(() => { if (!document.hidden) fitFrame(); }, 1500);
 }
 })();

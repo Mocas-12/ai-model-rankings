@@ -18,7 +18,7 @@
     <div class="topmeta">
       <span class="upd">更新于 <b id="updated-time">--</b>（北京时间）</span>
       <span class="upd">自动刷新 <b id="countdown">--</b></span>
-      <button id="btn-refresh" class="btn-refresh" title="立即刷新数据">⟳ 刷新</button>
+      <button id="btn-refresh" class="btn-refresh" title="立即刷新数据" aria-label="立即刷新数据">⟳ 刷新</button>
     </div>
   </div>
 </header>
@@ -58,12 +58,12 @@
   <section class="card">
     <div class="card-head">
       <h2><span class="sec-no">壹</span>用量总榜<span class="h-sub">24 小时真实 Token 消耗 · Top 12</span></h2>
-      <div class="tabs" id="usage-tabs">
-        <button class="tab on" data-metric="tokens">Tokens</button>
-        <button class="tab" data-metric="requests">请求次数</button>
+      <div class="tabs" id="usage-tabs" role="group" aria-label="用量指标切换">
+        <button class="tab on" data-metric="tokens" aria-pressed="true">Tokens</button>
+        <button class="tab" data-metric="requests" aria-pressed="false">请求次数</button>
       </div>
     </div>
-    <div class="chart tall" id="chart-usage"><div class="ph">加载中…</div></div>
+    <div class="chart tall" id="chart-usage" role="img" aria-label="用量总榜条形图：24 小时 Token 消耗或请求次数 Top 12"><div class="ph">加载中…</div></div>
   </section>
 
   <!-- 分项王者 -->
@@ -82,31 +82,31 @@
     <!-- 性价比 -->
     <section class="card">
       <div class="card-head"><h2><span class="sec-no">肆</span>性价比图<span class="h-sub">单请求成本 vs 智能指数 · 越靠左上越值</span></h2></div>
-      <div class="chart sq" id="chart-value"><div class="ph">加载中…</div></div>
+      <div class="chart sq" id="chart-value" role="img" aria-label="性价比散点图：单请求成本与智能指数，气泡大小为用量"><div class="ph">加载中…</div></div>
     </section>
     <!-- 速度 -->
     <section class="card">
       <div class="card-head"><h2><span class="sec-no">伍</span>速度榜<span class="h-sub">P50 延迟 vs 吞吐 · 气泡=请求量</span></h2></div>
-      <div class="chart sq" id="chart-speed"><div class="ph">加载中…</div></div>
+      <div class="chart sq" id="chart-speed" role="img" aria-label="速度散点图：P50 延迟与吞吐，气泡大小为请求量"><div class="ph">加载中…</div></div>
     </section>
   </div>
 
   <!-- 趋势 -->
   <section class="card">
     <div class="card-head"><h2><span class="sec-no">陆</span>30 天用量趋势<span class="h-sub">头部模型每日 Token 消耗 · Top 6</span></h2></div>
-    <div class="chart" id="chart-trend"><div class="ph">加载中…</div></div>
+    <div class="chart" id="chart-trend" role="img" aria-label="30 天用量趋势折线图：头部模型每日 Token 消耗"><div class="ph">加载中…</div></div>
   </section>
 
   <div class="grid2">
     <!-- 厂商份额 -->
     <section class="card">
       <div class="card-head"><h2><span class="sec-no">柒</span>厂商份额<span class="h-sub">近 7 天 Token 占比</span></h2></div>
-      <div class="chart sq" id="chart-vendors"><div class="ph">加载中…</div></div>
+      <div class="chart sq" id="chart-vendors" role="img" aria-label="厂商份额环形图：近 7 天 Token 占比"><div class="ph">加载中…</div></div>
     </section>
     <!-- 任务花费 -->
     <section class="card">
       <div class="card-head"><h2><span class="sec-no">捌</span>钱花在哪<span class="h-sub">30 天任务花费占比</span></h2></div>
-      <div class="chart sq" id="chart-spend"><div class="ph">加载中…</div></div>
+      <div class="chart sq" id="chart-spend" role="img" aria-label="任务花费环形图：30 天任务花费占比"><div class="ph">加载中…</div></div>
     </section>
   </div>
 
@@ -116,7 +116,7 @@
       <h2><span class="sec-no">玖</span>分类用量榜<span class="h-sub" id="cat-sub">最新一天分类消耗 · Top 8</span></h2>
       <div class="tabs" id="cat-tabs"></div>
     </div>
-    <div class="chart tall" id="chart-cat"><div class="ph">加载中…</div></div>
+    <div class="chart tall" id="chart-cat" role="img" aria-label="分类用量榜条形图：可切换编程、自然语言、长上下文、图像、工具调用、视频生成"><div class="ph">加载中…</div></div>
   </section>
 
   <!-- 本周黑马 -->

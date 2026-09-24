@@ -77,6 +77,7 @@ flowchart LR
 ```
 ai-model-rankings/
 ├── app.py                  # Streamlit 入口：全宽内嵌页面
+├── build.py                # index.html → Streamlit 内联改写（CI 有测试）
 ├── requirements.txt        # 仅 streamlit
 ├── .streamlit/config.toml  # Streamlit 界面暗色主题
 ├── index.html              # 页面本体
