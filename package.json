@@ -3,9 +3,12 @@
   "private": true,
   "description": "LLMRANKS 大模型战力榜（纯静态站）",
   "scripts": {
+    "lint": "eslint .",
     "test": "playwright test"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.0"
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.49.0",
+    "eslint": "^10.11.0"
   }
 }

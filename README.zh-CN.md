@@ -82,6 +82,7 @@ ai-model-rankings/
 ├── index.html              # 页面本体
 ├── css/style.css           # 水墨深色主题
 ├── js/app.js               # 数据层 + 图表 + 卡片
+├── vendor/echarts.min.js   # 内置 ECharts 5.6.0（不走 CDN，离线可跑）
 ├── logo.svg                # README 头部 logo
 ├── avatar.png              # 640×640 仓库头像（Settings 手动上传）
 └── docs/index.html         # GitHub Pages 跳转页
@@ -138,7 +139,7 @@ OpenRouter 边缘节点偶发返回 <code>200</code> 空响应体。应用会重
 📄 许可与免责
 ---
 
-排名反映 OpenRouter 平台真实用量与第三方评测（Artificial Analysis、Design Arena）；模型名称与商标归各自所有者所有。仅供选型参考。
+本项目以 [MIT License](./LICENSE) 开源。排名反映 OpenRouter 平台真实用量与第三方评测（Artificial Analysis、Design Arena）；模型名称与商标归各自所有者所有。仅供选型参考。
 
 ---
 

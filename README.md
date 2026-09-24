@@ -82,6 +82,7 @@ ai-model-rankings/
 ├── index.html              # the page itself
 ├── css/style.css           # ink-wash dark theme
 ├── js/app.js               # data layer + charts + cards
+├── vendor/echarts.min.js   # vendored ECharts 5.6.0 (no CDN needed, fully offline)
 ├── logo.svg                # README header logo
 ├── avatar.png              # 640×640 repo avatar (upload manually in Settings)
 └── docs/index.html         # GitHub Pages redirect page
@@ -138,7 +139,7 @@ No. All OpenRouter endpoints used here are public and CORS-enabled.
 📄 License
 ---
 
-Rankings reflect real OpenRouter traffic and third-party benchmarks (Artificial Analysis, Design Arena); model names and trademarks belong to their owners. For model selection reference only.
+Released under the [MIT License](./LICENSE). Rankings reflect real OpenRouter traffic and third-party benchmarks (Artificial Analysis, Design Arena); model names and trademarks belong to their owners. For model selection reference only.
 
 ---
 

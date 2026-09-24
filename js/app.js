@@ -169,10 +169,10 @@ function cacheGet() {
   try {
     const c = JSON.parse(sessionStorage.getItem('llmranks') || 'null');
     if (c && Date.now()-c.t < 120000) return c.d;
-  } catch (e) {}
+  } catch {}
   return null;
 }
-function cachePut(d) { try { sessionStorage.setItem('llmranks', JSON.stringify({ t:Date.now(), d })); } catch (e) {} }
+function cachePut(d) { try { sessionStorage.setItem('llmranks', JSON.stringify({ t:Date.now(), d })); } catch {} }
 
 async function fetchAll(force) {
   if (loading) return;
@@ -188,7 +188,6 @@ async function fetchAll(force) {
       else window.__errs = (window.__errs || []).concat('fetch '+k+': '+results[i].reason);
     });
     D.cats = { prog:D.prog, nl:D.nl, ctx:D.ctx, images:D.images, tools:D.tools, video:D.video };
-    prepareBench();
     // 缓存合并后的完整快照：部分接口失败时，缺口沿用上次的好数据
     cachePut({ usage:D.usage, bench:D.bench, trend:D.trend, disc:D.disc, spend:D.spend, perf:D.perf, cats:D.cats });
     afterPrimary();
@@ -265,7 +264,7 @@ function renderKPI() {
   const top = [...rows].sort((a, b) => (b.total_prompt_tokens+b.total_completion_tokens)-(a.total_prompt_tokens+a.total_completion_tokens))[0];
   const cards = $('#kpis').children;
   cards[0].classList.remove('skeleton'); cards[0].querySelector('.kpi-value').textContent = fmtTok(tok);
-  cards[0].querySelector('.kpi-sub').textContent = '免费变体占 '+(freeTok/tok*100).toFixed(1)+'%';
+  cards[0].querySelector('.kpi-sub').textContent = tok > 0 ? '免费变体占 '+(freeTok/tok*100).toFixed(1)+'%' : '';
   cards[1].classList.remove('skeleton'); cards[1].querySelector('.kpi-value').textContent = fmtReq(req);
   cards[1].querySelector('.kpi-sub').textContent = '≈ '+fmtReq(req/86400)+' 次/秒';
   cards[2].classList.remove('skeleton'); cards[2].querySelector('.kpi-value').textContent = bases.size;
@@ -399,7 +398,7 @@ function renderValue() {
     } }, TIP),
     grid: { left:10, right:110, top:30, bottom:10, containLabel:true },
     legend: { show:false },
-    xAxis: Object.assign(AXIS_C(true), { type:'log', min:0.0005, max:100, axisLabel:{ color:'#a89f8a', fontSize:10.5, formatter:v => '$'+v } }),
+    xAxis: Object.assign(AXIS_C(true), { type:'log', min: v => v.min/2, max: v => v.max*2, axisLabel:{ color:'#a89f8a', fontSize:10.5, formatter:v => '$'+v } }),
     yAxis: Object.assign(AXIS_C(true), { type:'value', min:'dataMin', max:'dataMax', axisLabel:{ color:'#a89f8a', fontSize:10.5 } }),
     series: [{
       type:'scatter', data,
@@ -563,8 +562,8 @@ function renderRisers() {
   if (!d) { el.innerHTML = '<div class="ph">暂无数据</div>'; return; }
   const items = [];
   (d.climbing || []).filter(x => x.weeklyTokens > 1e11).sort((a, b) => b.changePercent-a.changePercent).slice(0, 4)
-    .forEach(x => items.push({ ...x, tag:'黑马', tagCls:'r-tag' }));
-  (d.breakouts || []).slice(0, 2).forEach(x => items.push({ ...x, tag:'爆发', tagCls:'r-tag' }));
+    .forEach(x => items.push({ ...x, tag:'黑马' }));
+  (d.breakouts || []).slice(0, 2).forEach(x => items.push({ ...x, tag:'爆发' }));
   if (!items.length) { el.innerHTML = '<div class="ph">暂无数据</div>'; return; }
   el.innerHTML = items.map(x => {
     const g = x.changePercent >= 0 ? '+'+(x.changePercent*100).toFixed(0)+'%' : (x.changePercent*100).toFixed(0)+'%';
@@ -610,6 +609,16 @@ function renderAll() {
 }
 
 /* ---------- 事件 & 启动 ---------- */
+/* 毛笔字体兜底：loli 镜像不可用时补一个 Google Fonts 源（fonts.ready 后检测） */
+if (typeof document.fonts !== 'undefined') document.fonts.ready.then(() => {
+  if (!document.fonts.check('16px "Ma Shan Zheng"')) {
+    const l = document.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = 'https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@600&display=swap';
+    document.head.appendChild(l);
+  }
+});
+
 $('#usage-tabs').querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => {
   usageMetric = btn.dataset.metric;
   $('#usage-tabs').querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b === btn));
@@ -637,7 +646,7 @@ if (typeof window !== 'undefined' && window.parent !== window) {
       const fe = window.frameElement;
       const h = document.body.scrollHeight;
       if (fe && h > 600) fe.style.height = (h + 40) + 'px';
-    } catch (e) {}
+    } catch {}
   };
   window.addEventListener('load', fitFrame);
   window.addEventListener('resize', fitFrame);
