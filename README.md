@@ -86,7 +86,8 @@ ai-model-rankings/
 ├── vendor/echarts.min.js   # vendored ECharts 5.6.0 (no CDN needed, fully offline)
 ├── logo.svg                # README header logo
 ├── avatar.png              # 640×640 repo avatar (upload manually in Settings)
-└── docs/index.html         # GitHub Pages redirect page
+├── docs/index.html         # GitHub Pages redirect page
+└── docs/perf-baseline.md   # Lighthouse baseline & decisions
 ```
 
 🚀 Quick Start

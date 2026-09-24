@@ -6,9 +6,10 @@
   --line2: #454036;
   --txt: #ddd6c4;         /* 米色墨字 */
   --txt2: #a89f8a;
-  --txt3: #7a7260;
+  --txt3: #978f7b;        /* 淡墨（辅助字，对卡片底对比 ≥4.5） */
   --red: #c74a3c;         /* 朱砂 */
-  --red-bright: #d05a4a;
+  --red-bright: #e0654f;  /* 朱砂提亮（文字用，对卡片底对比 ≥4.5） */
+  --red-deep: #b03a2e;    /* 印泥深朱砂（印面白字对比 ≥4.5） */
   --teal: #7a9a8e;        /* 竹青（淡彩） */
   --gold: #c99a5f;        /* 赭石 */
   --radius: 4px;
@@ -77,7 +78,7 @@ a:hover { text-decoration: underline; }
 }
 .hero-seal {
   writing-mode: vertical-rl;
-  background: var(--red); color: #f7f3ea;
+  background: var(--red-deep); color: #f7f3ea;
   font-family: var(--kai); font-size: 15px; letter-spacing: 5px;
   padding: 9px 5px; border-radius: 2px; transform: rotate(-3deg);
   box-shadow: 0 2px 10px rgba(199, 74, 60, .4);
@@ -112,7 +113,7 @@ h2 {
 }
 .sec-no {
   font-family: var(--kai); font-size: 13px; color: #f7f3ea; letter-spacing: 0;
-  background: var(--red); padding: 3px 6px; border-radius: 2px;
+  background: var(--red-deep); padding: 3px 6px; border-radius: 2px;
   margin-right: 12px; transform: rotate(-3deg); line-height: 1.2;
 }
 .h-sub { font-family: var(--kai); font-size: 13.5px; color: var(--txt3); font-weight: 400; margin-left: 12px; letter-spacing: 2px; }

@@ -474,7 +474,7 @@ function renderVendors() {
   c.setOption({
     tooltip: Object.assign({ trigger:'item', formatter(p) {
       const r = rows[p.dataIndex];
-      const g = r.changePercent != null ? (r.changePercent >= 0 ? '<span style="color:#c74a3c">+'+(r.changePercent*100).toFixed(1)+'%</span>' : '<span style="color:#8d8677">'+(r.changePercent*100).toFixed(1)+'%</span>') : '';
+      const g = r.changePercent != null ? (r.changePercent >= 0 ? '<span style="color:#e0654f">+'+(r.changePercent*100).toFixed(1)+'%</span>' : '<span style="color:#8d8677">'+(r.changePercent*100).toFixed(1)+'%</span>') : '';
       return `<b>${esc(authorName(r.author))}</b><br>周 Token：${fmtTok(r.weeklyTokens)}<br>份额：${(r.share*100).toFixed(1)}% ${g ? '· 环比 '+g : ''}`;
     } }, TIP),
     legend: { orient:'vertical', right:0, top:'middle', textStyle:{ color:'#b5ad99', fontSize:11 }, itemWidth:10, itemHeight:10 },
@@ -596,6 +596,24 @@ function renderNewModels() {
 }
 
 /* ---------- 汇总渲染 ---------- */
+/* 图表动态摘要：canvas 内容读屏器无法朗读，渲染后把榜首写成一句 aria-label */
+function updateChartA11y() {
+  const byTok = r => r.total_prompt_tokens + r.total_completion_tokens;
+  if (D.usage.length) {
+    const top = [...D.usage].sort((a, b) => byTok(b)-byTok(a))[0];
+    $('#chart-usage').setAttribute('aria-label', `用量总榜条形图：24 小时 Top 12，当前第一 ${nameOf(top.model_permaslug)}，${fmtTok(byTok(top))} Token`);
+  }
+  if (D.disc && Array.isArray(D.disc.authors) && D.disc.authors.length) {
+    const top = [...D.disc.authors].sort((a, b) => b.weeklyTokens-a.weeklyTokens)[0];
+    $('#chart-vendors').setAttribute('aria-label', `厂商份额环形图：近 7 天 Token 占比，当前第一 ${authorName(top.author)}，份额 ${(top.share*100).toFixed(1)}%`);
+  }
+  const arr = D.cats[activeCat];
+  if (Array.isArray(arr) && arr.length) {
+    const last = arr[arr.length-1];
+    const rows = Object.entries(last.ys || {}).filter(([s]) => s !== 'Others').sort((a, b) => b[1]-a[1]);
+    if (rows.length) $('#chart-cat').setAttribute('aria-label', `分类用量榜条形图（${CATS.find(c => c.key === activeCat).label}）：当前第一 ${nameOf(rows[0][0])}`);
+  }
+}
 function afterPrimary() {
   prepareBench();
   renderAll();
@@ -606,7 +624,23 @@ function renderAll() {
   safe('kpi', renderKPI); safe('usage', renderUsage); safe('kings', renderKings); safe('dimtable', renderDimTable);
   safe('value', renderValue); safe('speed', renderSpeed); safe('trend', renderTrend);
   safe('vendors', renderVendors); safe('spend', renderSpendTask); safe('cattabs', renderCatTabs); safe('cat', renderCat); safe('risers', renderRisers);
+  safe('a11y', updateChartA11y);
 }
+
+/* tab 组键盘导航：方向键移动焦点并触发（事件委托挂在容器上，cat-tabs 重写 innerHTML 不丢监听） */
+function tabKeys(el) {
+  el.addEventListener('keydown', e => {
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+    const btns = [...el.querySelectorAll('.tab')];
+    const cur = btns.indexOf(document.activeElement);
+    if (cur < 0) return;
+    e.preventDefault();
+    const to = btns[(cur + (e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : -1) + btns.length) % btns.length];
+    to.focus(); to.click();
+  });
+}
+tabKeys($('#usage-tabs'));
+tabKeys($('#cat-tabs'));
 
 /* ---------- 事件 & 启动 ---------- */
 /* 毛笔字体兜底：loli 镜像不可用时补一个 Google Fonts 源（fonts.ready 后检测） */

@@ -4,9 +4,12 @@ on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: '0 3 * * 1'   # 每周一 03:00 UTC：线上接口 shape 冒烟
 
 jobs:
   smoke:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +28,28 @@ jobs:
       - run: npm run lint
       - run: npx playwright install --with-deps chromium
       - run: npm test
+      - name: Lighthouse baseline (non-blocking)
+        continue-on-error: true
+        run: |
+          node tests/static-server.mjs &
+          sleep 1
+          npx --yes lighthouse@12 http://localhost:8938 --preset=desktop \
+            --only-categories=performance,accessibility,best-practices,seo \
+            --output=json --output-path=lighthouse.json --port=0 --quiet \
+            --chrome-flags="--headless=new"
+          node -e "
+            const r = require('./lighthouse.json');
+            const line = Object.entries(r.categories).map(([k, v]) => k + ' ' + Math.round(v.score * 100)).join(' · ');
+            console.log('Lighthouse (desktop):', line);
+            require('fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY, '### Lighthouse (desktop)\n\n' + line + '\n');
+          "
+      - name: Upload Lighthouse report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-json
+          path: lighthouse.json
+          retention-days: 30
       - name: Upload test report on failure
         if: failure()
         uses: actions/upload-artifact@v4
@@ -32,3 +57,21 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+  live-api:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:live

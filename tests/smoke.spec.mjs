@@ -44,9 +44,9 @@ test("冒烟：数据管线走通、渲染零异常、分类榜可切换", async
   await intercept(page);
   await page.goto("/");
 
-  // afterPrimary 跑完的标志：更新时间已写入（真实数据管线完成）
+  // afterPrimary 跑完的标志：更新时间已写入真实北京时间（初始占位是 "--"）
   await page.waitForFunction(
-    () => window.__render && (document.querySelector("#updated-time") || {}).textContent,
+    () => window.__render && (document.querySelector("#updated-time") || {}).textContent !== "--",
     null, { timeout: 20000 },
   );
 
