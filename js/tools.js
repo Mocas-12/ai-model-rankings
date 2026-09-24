@@ -210,7 +210,7 @@ $('#tools-toggle').addEventListener('click', () => {
   body.hidden = !open;
   $('#tools-toggle').textContent = open ? '收起 ▴' : '展开 ▾';
   $('#tools-toggle').setAttribute('aria-expanded', String(open));
-  if (open) renderTool(activeTool);
+  if (open) showTool(activeTool);   // 必须走 showTool：解除当前 tab 面板的 hidden，只 renderTool 的话面板仍不可见
 });
 $('#tool-tabs').addEventListener('click', e => {
   const b = e.target.closest('.tab');

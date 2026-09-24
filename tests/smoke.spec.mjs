@@ -69,9 +69,11 @@ test("冒烟：数据管线走通、渲染零异常、分类榜可切换", async
   const body = await page.locator("body").innerText();
   expect(body).not.toContain("加载中…");
 
-  // 工具箱：展开 → 国产对决 / 算笔账渲染 → 对比器输入联动
+  // 工具箱：展开即见默认面板（回归：曾只 renderTool 不 showTool，展开后空空如也）
   await page.locator("#tools-toggle").click();
   await expect(page.locator("#tools-body")).toBeVisible();
+  await expect(page.locator("#tool-vs")).toBeVisible();
+  await expect(page.locator("#tool-vs")).not.toContainText("加载中…");
   await page.locator('#tool-tabs button[data-tool="cn"]').click();
   await expect(page.locator("#tool-cn")).not.toContainText("加载中…");
   await expect(page.locator(".duel-share")).toContainText("份额");
