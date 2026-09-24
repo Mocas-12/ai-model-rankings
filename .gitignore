@@ -1,4 +1,5 @@
-_probe/
 node_modules/
+__pycache__/
+_probe/
 test-results/
 playwright-report/
