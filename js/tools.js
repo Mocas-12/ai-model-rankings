@@ -69,18 +69,22 @@ function slugFromInput(s) {
   if (D.catalog) {
     if (D.catalog.bySlug[s]) return s;
     if (D.catalog.byBase[b]) return b;
-    const hit = D.catalog.raw.find(m => !m.hidden && (m.name === s || m.short_name === s));
+    const low = s.toLowerCase();
+    const hit = D.catalog.raw.find(m => !m.hidden &&
+      ((m.short_name || '').toLowerCase() === low || (m.name || '').toLowerCase() === low));
     if (hit) return baseSlug(hit.slug);
   }
   return b;
 }
 function syncVsUrl() {
   const a = $('#vs-a').value.trim(), b = $('#vs-b').value.trim();
-  const p = new URLSearchParams(location.search);
-  if (a || b) p.set('vs', [a, b].filter(Boolean).join(','));
-  else p.delete('vs');
-  const q = p.toString();
-  history.replaceState(null, '', location.pathname + (q ? '?' + q : ''));
+  try {
+    const p = new URLSearchParams(location.search);
+    if (a || b) p.set('vs', [a, b].filter(Boolean).join(','));
+    else p.delete('vs');
+    const q = p.toString();
+    history.replaceState(null, '', location.pathname + (q ? '?' + q : ''));
+  } catch {}   // Streamlit srcdoc iframe 里 replaceState 抛 SecurityError；URL 同步仅静态版可用
 }
 function renderVs() {
   syncVsUrl();

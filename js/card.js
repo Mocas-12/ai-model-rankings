@@ -63,11 +63,26 @@ function inkBase(c, W, H) {
   c.strokeStyle = 'rgba(221,214,196,.28)'; c.lineWidth = 1; c.strokeRect(38, 38, W-76, H-76);
 }
 function inkSeal(c, x, y, size, text) {
-  c.fillStyle = '#b03a2e'; c.fillRect(x, y, size, size);
-  c.fillStyle = '#f7f3ea'; c.font = `bold ${size*0.62}px KaiTi, serif`;
+  const chars = [...String(text)];
+  const vertical = chars.length > 1;   // 多字印章竖排（战力），单字方印（榜）
+  const w = vertical ? size * 0.66 : size;
+  const h = vertical ? (size * 0.66 + 8) * chars.length : size;
+  c.fillStyle = '#b03a2e'; c.fillRect(x, y, w, h);
+  c.fillStyle = '#f7f3ea';
+  c.font = `bold ${Math.round(size * 0.4)}px KaiTi, serif`;
   c.textAlign = 'center'; c.textBaseline = 'middle';
-  c.fillText(text, x + size/2, y + size/2 + 2);
+  chars.forEach((ch, i) => c.fillText(ch, x + w / 2, y + (i + 0.5) * (h / chars.length)));
 }
+function fitText(c, text, maxW) {   // 按像素截断，避免 slice 出残词
+  if (c.measureText(text).width <= maxW) return text;
+  let t = text;
+  while (t.length > 1 && c.measureText(t + '…').width > maxW) t = t.slice(0, -1);
+  return t + '…';
+}
+const bjDate = () => {
+  const m = bjTime().match(/(\d+)\/(\d+)\/(\d+)\s*(\d+):(\d+)/);
+  return m ? `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')} ${m[4].padStart(2, '0')}:${m[5]}` : bjTime();
+};
 async function stamp(mode, f) {
   await document.fonts.load('100px "Ma Shan Zheng"').catch(() => {});
   const cv = $('#stamp-canvas'), W = 1000, H = 1250;
@@ -77,27 +92,34 @@ async function stamp(mode, f) {
   c.textAlign = 'center'; c.textBaseline = 'alphabetic';
   c.fillStyle = '#e8e2d2'; c.font = '100px "Ma Shan Zheng", KaiTi, serif';
   c.fillText('墨榜', W/2, 190);
-  inkSeal(c, W - 132, 92, 64, '战力');
+  inkSeal(c, W - 118, 90, 62, '战力');
   c.fillStyle = '#a89f8a'; c.font = '24px "PingFang SC", "Microsoft YaHei", sans-serif';
-  c.fillText('AI 大模型实时战力谱 · 北京时间 ' + bjTime().replace(/\//g, '-'), W/2, 240);
+  c.fillText('AI 大模型实时战力谱 · 北京时间 ' + bjDate(), W/2, 240);
 
   if (mode === 'single' && f) {
-    c.fillStyle = '#e0654f'; c.font = '54px "Ma Shan Zheng", KaiTi, serif';
-    c.fillText(nameOf(f.slug).slice(0, 14), W/2, 360);
-    c.fillStyle = '#a89f8a'; c.font = '26px sans-serif';
-    c.fillText(authorName(f.author) + (f.hasFree ? ' · 有免费变体' : ''), W/2, 408);
+    c.fillStyle = authorColor(f.author); c.font = 'bold 52px "PingFang SC", "Microsoft YaHei", sans-serif';
+    c.fillText(fitText(c, nameOf(f.slug).replace(/\s*\([^)]*\)/g, ''), 760), W/2, 380);
+    c.fillStyle = '#a89f8a'; c.font = '26px "PingFang SC", "Microsoft YaHei", sans-serif';
+    c.fillText(esc(authorName(f.author)) + (f.hasFree ? ' · 有免费变体' : '') + (f.hasBatch ? ' · 支持 batch' : ''), W/2, 430);
+    c.strokeStyle = 'rgba(221,214,196,.25)'; c.lineWidth = 1.5;
+    c.beginPath(); c.moveTo(120, 486);
+    c.bezierCurveTo(360, 478, 640, 494, 880, 484); c.stroke();
     const items = [
       ['综合智能', f.aa.intelligence != null ? f.aa.intelligence.toFixed(1) : '--'],
-      ['单请求', f.cost != null ? fmtUsd(f.cost) : '--'],
+      ['单请求成本', f.cost != null ? fmtUsd(f.cost) : '--'],
       ['24h Token', f.tok24h ? fmtTok(f.tok24h) : '--'],
-      ['P50 延迟', f.p50 ? (f.p50/1000).toFixed(2) + 's' : '--'],
+      ['P50 延迟', f.p50 ? (f.p50/1000).toFixed(2) + ' s' : '--'],
     ];
     items.forEach(([label, val], i) => {
-      const x = W/2 + (i - (items.length-1)/2) * 210;
-      c.fillStyle = '#a89f8a'; c.font = '22px sans-serif'; c.fillText(label, x, 520);
-      c.fillStyle = '#ddd6c4'; c.font = 'bold 40px Georgia, serif'; c.fillText(String(val), x, 572);
+      const x = W/2 + (i % 2 - 0.5) * 420, y = 586 + ((i / 2) | 0) * 140;
+      c.fillStyle = '#a89f8a'; c.font = '22px "PingFang SC", "Microsoft YaHei", sans-serif'; c.fillText(label, x, y);
+      c.fillStyle = '#ddd6c4'; c.font = 'bold 42px Georgia, serif'; c.fillText(String(val), x, y + 52);
     });
-    c.fillStyle = '#7a7260'; c.font = '22px sans-serif';
+    const meta = [f.req24h ? '24h 请求 ' + fmtReq(f.req24h) : '', f.ctx ? '上下文 ' + (f.ctx >= 1e6 ? (f.ctx/1e6).toFixed(1).replace(/\.0$/, '') + 'M' : Math.round(f.ctx/1000) + 'K') : '', f.tps ? Math.round(f.tps) + ' tok/s' : ''].filter(Boolean).join(' · ');
+    if (meta) { c.fillStyle = '#a89f8a'; c.font = '22px "PingFang SC", "Microsoft YaHei", sans-serif'; c.fillText(meta, W/2, 900); }
+    c.fillStyle = '#7a7260'; c.font = '26px KaiTi, serif';
+    c.fillText('榜如水墨，浓淡随时', W/2, 1000);
+    c.fillStyle = '#7a7260'; c.font = '20px sans-serif';
     c.fillText('数据 · openrouter.ai 24h 真实用量 · AA 评分', W/2, H - 120);
   } else {
     const rows = [...D.usage].sort((a, b) =>
@@ -110,7 +132,7 @@ async function stamp(mode, f) {
       c.fillStyle = '#e0654f'; c.font = '30px KaiTi, serif'; c.textAlign = 'left';
       c.fillText(CN_NUM[i], 100, y);
       c.fillStyle = '#ddd6c4'; c.font = '28px "PingFang SC", "Microsoft YaHei", sans-serif';
-      c.fillText(nameOf(r.model_permaslug).slice(0, 16), 155, y);
+      c.fillText(fitText(c, nameOf(r.model_permaslug), 480), 155, y);
       c.fillStyle = authorColor(authorOf(r.model_permaslug));
       c.fillRect(155, y + 22, Math.max(30, (tok/mx) * 560), 18);
       c.fillStyle = '#a89f8a'; c.font = '22px Georgia, serif'; c.textAlign = 'right';
