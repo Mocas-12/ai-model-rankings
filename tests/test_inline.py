@@ -7,7 +7,8 @@ from build import build_html
 
 html = build_html()
 assert 'href="css/style.css"' not in html, "style.css 未被内联"
-assert 'src="js/app.js"' not in html, "app.js 未被内联"
+for js in ("app", "tools", "card"):
+    assert f'src="js/{js}.js"' not in html, f"{js}.js 未被内联"
 assert "vendor/echarts" not in html, "echarts 未替换为 CDN"
 assert 'integrity="sha384-' in html, "CDN ECharts 缺少 SRI"
 assert html.count("<style>") >= 1, "内联样式缺失"

@@ -68,6 +68,30 @@ test("冒烟：数据管线走通、渲染零异常、分类榜可切换", async
   // 无「加载中」残留：核心分区全部有内容
   const body = await page.locator("body").innerText();
   expect(body).not.toContain("加载中…");
+
+  // 工具箱：展开 → 国产对决 / 算笔账渲染 → 对比器输入联动
+  await page.locator("#tools-toggle").click();
+  await expect(page.locator("#tools-body")).toBeVisible();
+  await page.locator('#tool-tabs button[data-tool="cn"]').click();
+  await expect(page.locator("#tool-cn")).not.toContainText("加载中…");
+  await expect(page.locator(".duel-share")).toContainText("份额");
+  await page.locator('#tool-tabs button[data-tool="calc"]').click();
+  await expect(page.locator("#calc-out .t-table")).toBeVisible();
+
+  // 详情弹层：点击维度之最行 → 弹出 → 加入对比 → 对比表出现 → ESC 关闭
+  const slug = await page.locator("#dimtable tbody tr").first().getAttribute("data-slug");
+  await page.locator("#dimtable tbody tr").first().click();
+  await expect(page.locator("#modal")).toBeVisible();
+  await expect(page.locator(".m-name")).toBeVisible();
+  await page.locator("#modal-vs").click();
+  await expect(page.locator("#vs-a")).toHaveValue(slug.split(":")[0].replace(/-(19|20)\d{6}.*$/, ""));
+  await expect(page.locator("#vs-out .t-table")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#modal")).toBeHidden();
+
+  // 拓印：canvas 绘制不抛错（下载行为不在冒烟内断言）
+  await page.locator("#btn-stamp").click();
+  await page.waitForTimeout(300);
 });
 
 test("降级：数据源失败时页面不崩、失败被记录进调试钩子", async ({ page }) => {

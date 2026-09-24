@@ -19,6 +19,7 @@
       <span class="upd">更新于 <b id="updated-time">--</b>（北京时间）</span>
       <span class="upd">自动刷新 <b id="countdown">--</b></span>
       <button id="btn-refresh" class="btn-refresh" title="立即刷新数据">⟳ 刷新</button>
+      <button id="btn-stamp" class="btn-refresh" title="把今日榜一拓印成水墨卡">拓印</button>
     </div>
   </div>
 </header>
@@ -131,7 +132,60 @@
     <div class="newmodels" id="newmodels"></div>
   </section>
 
+  <!-- 工具箱（默认折叠，保护首屏一眼看完的定位） -->
+  <section class="card" id="sec-tools">
+    <div class="card-head">
+      <h2><span class="sec-no">拾贰</span>工具箱<span class="h-sub">对比 · 白嫖 · 对决 · 降价 · 算账</span></h2>
+      <button id="tools-toggle" class="btn-refresh" aria-expanded="false" aria-controls="tools-body">展开 ▾</button>
+    </div>
+    <div id="tools-body" hidden>
+      <div class="tabs" id="tool-tabs" role="group" aria-label="工具切换">
+        <button class="tab on" data-tool="vs" aria-pressed="true">模型对比</button>
+        <button class="tab" data-tool="free" aria-pressed="false">白嫖榜</button>
+        <button class="tab" data-tool="cn" aria-pressed="false">国产对决</button>
+        <button class="tab" data-tool="price" aria-pressed="false">降价榜</button>
+        <button class="tab" data-tool="calc" aria-pressed="false">算笔账</button>
+      </div>
+      <div class="tool-pane" id="tool-vs" hidden>
+        <div class="vs-box">
+          <input id="vs-a" list="vs-list" placeholder="输入模型 A（slug 或名称）" aria-label="模型 A">
+          <span class="vs-x">对</span>
+          <input id="vs-b" list="vs-list" placeholder="输入模型 B" aria-label="模型 B">
+          <datalist id="vs-list"></datalist>
+        </div>
+        <div id="vs-out"><div class="ph">选两个模型开始对比，或点击任意榜单里的模型 → 详情 → 加入对比</div></div>
+      </div>
+      <div class="tool-pane" id="tool-free" hidden>
+        <div class="chart tall" id="chart-free" role="img" aria-label="免费模型榜条形图：24 小时 free 变体 Token 消耗 Top 12"></div>
+        <p class="tool-note">口径：24h 内 <code>variant=free</code> 调用行按 base 模型聚合；智能分来自 Artificial Analysis。</p>
+      </div>
+      <div class="tool-pane" id="tool-cn" hidden><div class="ph">加载中…</div></div>
+      <div class="tool-pane" id="tool-price" hidden><div class="ph">加载中…</div></div>
+      <div class="tool-pane" id="tool-calc" hidden>
+        <div class="calc-box">
+          <label>日请求量 <input id="calc-req" type="number" value="1000" min="0" step="100"></label>
+          <span>× 单请求真实成本 × 30 天</span>
+        </div>
+        <div id="calc-out"></div>
+      </div>
+    </div>
+  </section>
+
 </main>
+
+<!-- 模型详情弹层 -->
+<div id="modal" hidden>
+  <div class="modal-mask" id="modal-mask"></div>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-label="模型详情">
+    <button id="modal-close" class="modal-x" aria-label="关闭">×</button>
+    <div id="modal-body"></div>
+    <div class="modal-acts">
+      <button id="modal-vs" class="btn-refresh">加入对比</button>
+      <button id="modal-stamp" class="btn-refresh">拓印此模型</button>
+    </div>
+  </div>
+</div>
+<canvas id="stamp-canvas" hidden></canvas>
 
 <footer class="wrap foot">
   <p>数据来自 <a href="https://openrouter.ai/rankings" target="_blank" rel="noopener">openrouter.ai</a> 公开接口（智能/编程/智能体分数来自 Artificial Analysis，网页/可视化等分数来自 Design Arena），每小时随官方更新。</p>
@@ -140,5 +194,7 @@
 
 <script src="vendor/echarts.min.js"></script>
 <script src="js/app.js"></script>
+<script src="js/tools.js"></script>
+<script src="js/card.js"></script>
 </body>
 </html>

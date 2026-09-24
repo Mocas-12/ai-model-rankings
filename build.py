@@ -19,6 +19,10 @@ REWRITES = [
      "<style>" + (ROOT / "css" / "style.css").read_text(encoding="utf-8") + "</style>"),
     (r'<script src="js/app\.js"[^>]*></script>',
      "<script>" + (ROOT / "js" / "app.js").read_text(encoding="utf-8") + "</script>"),
+    (r'<script src="js/tools\.js"[^>]*></script>',
+     "<script>" + (ROOT / "js" / "tools.js").read_text(encoding="utf-8") + "</script>"),
+    (r'<script src="js/card\.js"[^>]*></script>',
+     "<script>" + (ROOT / "js" / "card.js").read_text(encoding="utf-8") + "</script>"),
     (r'<script src="vendor/echarts\.min\.js"[^>]*></script>', ECHARTS_CDN),
 ]
 

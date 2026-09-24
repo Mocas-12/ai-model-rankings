@@ -44,6 +44,9 @@
 - **🏢 Vendor share & task spend** — weekly market share donut, 30-day spend-by-category donut.
 - **🗂️ Category boards** — programming / natural language / long-context / image / tool-call / video boards.
 - **🐎 Dark horses & fresh models** — biggest weekly gainers with sparklines; models onboarded in the last 14 days.
+- **🧰 Toolbox** — head-to-head model compare (`?vs=slugA,slugB`), free-variants board, China-vs-global duel, **daily price-drop board** (git-as-database snapshots), monthly cost calculator.
+- **🔍 Model card** — click any model on any board for a full-dimension popup; jump straight into compare.
+- **🖨 Ink stamping** — one-click canvas share cards (Top-5 board or single model) in the site's ink-wash style.
 - **🎨 Ink-wash dark UI** — Ma Shan Zheng calligraphy, seal stamps, layered mountains; every vendor rendered in its **real brand color** (Claude orange, GLM blue, OpenAI green…).
 - **🔄 Auto-refresh** every 5 minutes, Beijing-time timestamps.
 
@@ -56,18 +59,23 @@ flowchart LR
     B --> C[ECharts render]
     C --> D[Ink-wash dark UI]
     D -->|postMessage / frameElement| E[Streamlit iframe auto-height]
+    F[Daily CI] -->|costPerRequest snapshot| G[(git: data/snapshots)]
+    G -->|diff last two| H[Price-drop board]
 ```
 
 1. The browser fetches 12 public OpenRouter endpoints concurrently (3-way pool, empty-payload & network retries).
 2. Responses are normalized (unwrapping `{data:{data:[…]}}` variants); dated model slugs are reduced to base slugs to join benchmarks, costs and names.
 3. ECharts renders 7 charts + 2 card grids + 1 table; per-vendor brand colors are applied consistently across all charts.
-4. `app.py` embeds the page as a full-width Streamlit component; the page stretches its own iframe to the true content height.
+4. A daily CI job commits a `costPerRequest` snapshot into `data/snapshots/` — the price-drop board diffs the last two, giving a static site a history without a backend.
+5. `app.py` embeds the page as a full-width Streamlit component; the page stretches its own iframe to the true content height.
 
 📖 Usage Guide
 ---
 
 - **Tokens / Requests** — toggle the usage leaderboard metric.
 - **Category tabs** — switch the category board (编程 / 自然语言 / 长上下文 / 图像 / 工具调用 / 视频).
+- **Toolbox (拾贰, collapsed by default)** — head-to-head compare with shareable `?vs=` URLs, free-models board, China-vs-global duel, price drops, cost calculator.
+- **Click any model** — full-dimension popup; "加入对比" sends it to the compare tool; "拓印" renders an ink-wash PNG.
 - **Hover anything** — every chart carries full tooltips (slug, vendor, share, cost, provider).
 - **⟳ 刷新** — force a fresh fetch; data also auto-refreshes every 5 minutes.
 
@@ -82,7 +90,11 @@ ai-model-rankings/
 ├── .streamlit/config.toml  # dark silk theme for Streamlit chrome
 ├── index.html              # the page itself
 ├── css/style.css           # ink-wash dark theme
-├── js/app.js               # data layer + charts + cards
+├── js/app.js               # data layer + charts + cards (exposes window.MB)
+├── js/tools.js             # toolbox: compare / free / duel / price-drop / calculator
+├── js/card.js              # model popup + ink stamp share cards
+├── scripts/snapshot.py     # daily costPerRequest snapshot (CI schedule)
+├── data/snapshots/         # git-as-database: daily cost history for the price board
 ├── vendor/echarts.min.js   # vendored ECharts 5.6.0 (no CDN needed, fully offline)
 ├── logo.svg                # README header logo
 ├── avatar.png              # 640×640 repo avatar (upload manually in Settings)
@@ -121,6 +133,7 @@ streamlit run app.py
 - `PAL` — the traditional Chinese pigment palette (花青 / 藤黄 / 石绿 / 紫棠 / 赭石 …).
 - `BRAND` — official vendor brand colors (Claude orange, GLM blue, OpenAI green…); add an entry to override.
 - `CATS` — category boards shown in the tabbed section.
+- `CN_AUTHORS` in `js/tools.js` — vendor slugs counted as domestic in the China-vs-global duel.
 
 ❓ FAQ
 ---

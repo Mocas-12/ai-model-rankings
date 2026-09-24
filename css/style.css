@@ -229,3 +229,71 @@ h2 {
   .td-src, .th-src { display: none; }
   .sun { width: 54px; height: 54px; right: 7%; bottom: 165px; }
 }
+
+/* ---------- 工具箱 ---------- */
+[data-slug] { cursor: pointer; }
+[data-slug]:hover .k-model, [data-slug]:hover .td-model, [data-slug]:hover .r-name, [data-slug]:hover .n-name { color: var(--red-bright); }
+.tool-pane { padding-top: 6px; }
+.tool-note { font-size: 12px; color: var(--txt3); margin-top: 12px; line-height: 1.7; }
+.tool-h { font-family: var(--kai); font-size: 15px; color: var(--txt); margin: 16px 0 8px; letter-spacing: 1px; }
+
+.t-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.t-table th { text-align: left; color: var(--txt3); font-weight: 600; font-size: 11.5px; padding: 6px 10px; border-bottom: 1px solid var(--line2); }
+.t-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); color: var(--txt); font-variant-numeric: tabular-nums; }
+.t-table td:first-child { font-family: var(--kai); color: var(--txt2); }
+.t-table td.win { color: var(--red-bright); font-weight: 700; }
+.t-table td.down { color: var(--teal); }
+.t-table td.up { color: var(--red-bright); }
+
+.vs-box { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.vs-box input {
+  flex: 1; min-width: 200px; background: var(--card2); border: 1px solid var(--line2); border-radius: 3px;
+  color: var(--txt); padding: 8px 12px; font-size: 13px; outline: none;
+}
+.vs-box input:focus { border-color: var(--red); }
+.vs-x { font-family: var(--kai); color: var(--red-bright); font-size: 16px; }
+
+.calc-box { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; color: var(--txt2); font-size: 13px; }
+.calc-box input { width: 110px; background: var(--card2); border: 1px solid var(--line2); border-radius: 3px; color: var(--txt); padding: 8px 10px; font-size: 13px; }
+.calc-box input:focus { border-color: var(--red); outline: none; }
+
+.duel-share { font-family: var(--kai); font-size: 17px; color: var(--txt2); margin-bottom: 16px; letter-spacing: 1px; }
+.duel-share b { color: var(--red-bright); font-size: 30px; margin: 0 6px; font-family: Georgia, serif; }
+.duel-share small { color: var(--txt3); font-size: 13px; }
+.duel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.duel-side h3 { font-family: var(--kai); font-size: 14px; color: var(--txt2); margin-bottom: 10px; letter-spacing: 1px; }
+.duel-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.duel-rank { font-family: var(--kai); color: var(--red-bright); font-size: 15px; width: 20px; flex: none; }
+.duel-name { font-size: 13px; color: var(--txt); width: 150px; flex: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.duel-bar { flex: 1; height: 10px; background: rgba(221,214,196,.06); border-radius: 2px; overflow: hidden; }
+.duel-bar i { display: block; height: 100%; border-radius: 2px; }
+.duel-tok { font-size: 12px; color: var(--txt3); width: 70px; text-align: right; flex: none; font-variant-numeric: tabular-nums; }
+
+/* ---------- 模型详情弹层 ---------- */
+#modal { position: fixed; inset: 0; z-index: 200; }
+.modal-mask { position: absolute; inset: 0; background: rgba(15, 13, 10, .72); backdrop-filter: blur(4px); }
+.modal-card {
+  position: relative; max-width: 620px; margin: 7vh auto; max-height: 86vh; overflow: auto;
+  background: var(--card); border: 1px solid var(--line2); border-radius: var(--radius);
+  padding: 26px 28px 20px; box-shadow: 0 18px 60px rgba(0,0,0,.5);
+}
+.modal-x {
+  position: absolute; top: 12px; right: 14px; background: none; border: none;
+  color: var(--txt3); font-size: 26px; cursor: pointer; line-height: 1;
+}
+.modal-x:hover { color: var(--red-bright); }
+.m-name { font-family: var(--kai); font-size: 24px; letter-spacing: 1px; padding-right: 30px; }
+.m-name .k-chip { margin-left: 10px; vertical-align: 4px; }
+.m-slug { font-size: 12px; color: var(--txt3); margin: 6px 0 16px; word-break: break-all; }
+.m-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+.m-stat { background: var(--card2); border: 1px solid var(--line); border-radius: 3px; padding: 10px 12px; }
+.m-stat small { display: block; color: var(--txt3); font-size: 11px; margin-bottom: 3px; }
+.m-stat b { color: var(--txt); font-size: 17px; font-variant-numeric: tabular-nums; }
+.m-stat b small { display: inline; color: var(--txt3); font-weight: 400; }
+.modal-acts { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
+
+@media (max-width: 900px) {
+  .duel-grid { grid-template-columns: 1fr; }
+  .m-grid { grid-template-columns: repeat(2, 1fr); }
+  .duel-name { width: 110px; }
+}

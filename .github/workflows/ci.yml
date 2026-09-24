@@ -6,6 +6,7 @@ on:
   pull_request:
   schedule:
     - cron: '0 3 * * 1'   # 每周一 03:00 UTC：线上接口 shape 冒烟
+    - cron: '0 5 * * *'   # 每日 05:00 UTC：成本快照（降价榜数据源）
 
 jobs:
   smoke:
@@ -59,7 +60,7 @@ jobs:
           retention-days: 7
 
   live-api:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' && github.event.schedule == '0 3 * * 1'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -75,3 +76,18 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:live
+
+  snapshot:
+    if: github.event_name == 'schedule' && github.event.schedule == '0 5 * * *'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/snapshot.py
+      - run: |
+          git config user.name "mubang-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/snapshots
+          git diff --cached --quiet || git commit -m "data: 每日成本快照 [skip ci]"
+          git push

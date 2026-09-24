@@ -126,6 +126,29 @@ function nameOf(slug) {
 }
 const authorOf = slug => String(slug).includes('/') ? String(slug).split('/')[0] : '';
 
+/* 单模型全维度数据聚合：详情弹层 / 对比器 / 拓印卡共用的唯一事实来源 */
+function modelFacts(slug) {
+  const base = baseSlug(slug);
+  const f = { slug: String(slug), base, name: nameOf(slug), author: authorOf(slug) };
+  f.cost = nameIdx.cost[f.slug] ?? nameIdx.cost[base] ?? null;
+  const aa = nameIdx.base2aa[base] || {};
+  f.aa = { intelligence: aa.intelligence ? aa.intelligence.score : null,
+           coding: aa.coding ? aa.coding.score : null, agentic: aa.agentic ? aa.agentic.score : null };
+  f.da = {};
+  Object.entries(nameIdx.base2da[base] || {}).forEach(([k, v]) => { f.da[k] = { elo: v.score, win: v.win }; });
+  let tok = 0, req = 0;
+  D.usage.forEach(r => { if (baseSlug(r.model_permaslug) === base) { tok += r.total_prompt_tokens+r.total_completion_tokens; req += r.count || 0; if (r.variant === 'free') f.hasFree = true; if (r.variant === 'batch') f.hasBatch = true; } });
+  f.tok24h = tok; f.req24h = req;
+  const p = D.perf.find(x => baseSlug(x.slug) === base && x.p50_latency);
+  if (p) { f.p50 = p.p50_latency; f.tps = p.p50_throughput; f.fastProv = p.best_latency_provider; f.fastPrice = p.best_latency_price; }
+  if (D.catalog) {
+    const raw = D.catalog.raw.filter(m => !m.hidden && (m.slug === f.slug || baseSlug(m.slug) === base));
+    const m = raw.find(x => x.slug === f.slug) || raw.find(x => !/free|batch/i.test(x.name)) || raw[0];
+    if (m) { f.ctx = m.context_length || null; f.created = m.created_at || null; }
+  }
+  return f;
+}
+
 /* ---------------- 加载 ---------------- */
 function unwrap(j) { const d = j && j.data !== undefined ? j.data : j; return Array.isArray(d) ? d : (d && d.data !== undefined ? d.data : d); }
 function emptyPayload(j) {
@@ -252,7 +275,9 @@ function chart(id) {
   }
   return chartInstances[id];
 }
-function safe(name, fn) { try { fn(); } catch (e) { console.error('[llmranks]', name, e); window.__errs = (window.__errs || []).concat(name+': '+e.message+' @ '+(e.stack||'').split('\n')[1]); } }
+const safe = (name, fn) => { try { fn(); } catch (e) { console.error('[llmranks]', name, e); window.__errs = (window.__errs || []).concat(name+': '+e.message+' @ '+(e.stack||'').split('\n')[1]); } };
+/* 图形点击 → 模型详情弹层（弹层本体在 js/card.js） */
+const openCardSlug = s => { if (s && window.MB && window.MB.openCard) window.MB.openCard(s); };
 
 /* ---------- KPI ---------- */
 function renderKPI() {
@@ -297,13 +322,14 @@ function renderUsage() {
       itemStyle: { borderRadius:[0, 2, 2, 0], color: p => authorColor(authorOf(rows[p.dataIndex].model_permaslug)) },
     }],
   }, { notMerge:true });
+  c.off('click'); c.on('click', p => { if (p.componentType === 'series') openCardSlug(rows[p.dataIndex].model_permaslug); });
 }
 
 /* ---------- 分项王者 ---------- */
 function kingCard(cat, src, model, scoreLine, slug, opts) {
   const variant = opts && opts.variant;
   const chip = variant === 'free' ? '<span class="k-chip free">FREE</span>' : variant === 'batch' ? '<span class="k-chip batch">BATCH</span>' : '';
-  return `<div class="king${opts && opts.top1 ? ' top1' : ''}">
+  return `<div class="king${opts && opts.top1 ? ' top1' : ''}" data-slug="${esc(slug)}">
     <div class="k-cat">${esc(cat)}<span class="k-src">${esc(src)}</span></div>
     <div class="k-model">${esc(model)}${chip}</div>
     <div class="k-score">${scoreLine}</div>
@@ -366,7 +392,7 @@ function renderDimTable() {
   const cl = (D.disc && D.disc.climbing || []).filter(x => x.weeklyTokens > 1e11).sort((a, b2) => b2.changePercent-a.changePercent)[0];
   if (cl) rows.push(['周涨幅', cl.variantPermaslug, '+'+(cl.changePercent*100).toFixed(0)+'% · 周 '+fmtTok(cl.weeklyTokens), 'OpenRouter']);
   $('#dimtable').innerHTML = `<table class="dim-t"><thead><tr><th>维度</th><th>最强模型</th><th>数值</th><th class="th-src">数据源</th></tr></thead><tbody>` +
-    rows.map(r => `<tr><td class="td-cat">${esc(r[0])}</td><td class="td-model">${esc(nameOf(r[1]))}<span class="td-author">${esc(authorName(authorOf(r[1])))}</span></td><td class="td-val">${esc(r[2])}</td><td class="td-src">${esc(r[3])}</td></tr>`).join('') +
+    rows.map(r => `<tr data-slug="${esc(r[1])}"><td class="td-cat">${esc(r[0])}</td><td class="td-model">${esc(nameOf(r[1]))}<span class="td-author">${esc(authorName(authorOf(r[1])))}</span></td><td class="td-val">${esc(r[2])}</td><td class="td-src">${esc(r[3])}</td></tr>`).join('') +
     `</tbody></table>`;
 }
 
@@ -409,6 +435,7 @@ function renderValue() {
       emphasis: { scale:1.15 },
     }],
   }, { notMerge:true });
+  c.off('click'); c.on('click', p => { if (p.componentType === 'series') openCardSlug(p.name); });
 }
 
 /* ---------- 速度榜 ---------- */
@@ -438,6 +465,7 @@ function renderSpeed() {
       labelLayout: { hideOverlap:true, moveOverlap:'shiftY' },
     }],
   }, { notMerge:true });
+  c.off('click'); c.on('click', p => { if (p.componentType === 'series') openCardSlug(p.name); });
 }
 
 /* ---------- 趋势 ---------- */
@@ -465,6 +493,7 @@ function renderTrend() {
       emphasis:{ focus:'series' },
     })),
   }, { notMerge:true });
+  c.off('click'); c.on('click', p => { if (p.componentType === 'series' && top[p.seriesIndex]) openCardSlug(top[p.seriesIndex]); });
 }
 
 /* ---------- 厂商份额 ---------- */
@@ -546,6 +575,7 @@ function renderCat() {
       itemStyle: { borderRadius:[0, 2, 2, 0], color: p => authorColor(authorOf(rows[p.dataIndex][0])) },
     }],
   }, { notMerge:true });
+  c.off('click'); c.on('click', p => { if (p.componentType === 'series') openCardSlug(rows[p.dataIndex][0]); });
 }
 
 /* ---------- 本周黑马 ---------- */
@@ -567,7 +597,7 @@ function renderRisers() {
   if (!items.length) { el.innerHTML = '<div class="ph">暂无数据</div>'; return; }
   el.innerHTML = items.map(x => {
     const g = x.changePercent >= 0 ? '+'+(x.changePercent*100).toFixed(0)+'%' : (x.changePercent*100).toFixed(0)+'%';
-    return `<div class="riser">
+    return `<div class="riser" data-slug="${esc(x.variantPermaslug)}">
       <div class="r-head"><span class="r-name">${esc(nameOf(x.variantPermaslug))}<span class="r-tag">${x.tag}</span></span>
       <span class="r-grow">${g}</span></div>
       <div class="r-tok">周 Token ${fmtTok(x.weeklyTokens)} · 上周 ${fmtTok(x.prevWeeklyTokens || 0)}</div>
@@ -588,7 +618,7 @@ function renderNewModels() {
   $('#newmodels').innerHTML = rows.map(m => {
     const ctx = m.context_length ? (m.context_length >= 1e6 ? (m.context_length/1e6).toFixed(1).replace(/\.0$/, '')+'M' : Math.round(m.context_length/1000)+'K') : '--';
     const mod = (m.output_modalities || []).filter(x => x !== 'text').join('/');
-    return `<div class="nm">
+    return `<div class="nm" data-slug="${esc(m.slug)}">
       <div class="n-name">${esc(m.short_name || m.name)}</div>
       <div class="n-meta"><span>${esc(m.author_display_name || authorName(m.author))}</span><span>${m.created_at.slice(5, 10)} 上架</span><span>上下文 ${ctx}</span>${mod ? `<span class="n-mod">${esc(mod)}</span>` : ''}</div>
     </div>`;
@@ -625,6 +655,7 @@ function renderAll() {
   safe('value', renderValue); safe('speed', renderSpeed); safe('trend', renderTrend);
   safe('vendors', renderVendors); safe('spend', renderSpendTask); safe('cattabs', renderCatTabs); safe('cat', renderCat); safe('risers', renderRisers);
   safe('a11y', updateChartA11y);
+  (window.MB ? window.MB.subscribers : []).forEach(f => safe('sub', f));
 }
 
 /* tab 组键盘导航：方向键移动焦点并触发（事件委托挂在容器上，cat-tabs 重写 innerHTML 不丢监听） */
@@ -673,6 +704,17 @@ $('#foot-time').textContent = bjTime();
 
 fetchAll(false).then(() => lazyCatalog());
 if (typeof window !== 'undefined') window.__render = () => { prepareBench(); renderAll(); };
+/* 公共 API：js/tools.js、js/card.js 按序消费（零构建的多文件拆分，无打包器） */
+if (typeof window !== 'undefined') window.MB = {
+  D, nameOf, authorName, authorOf, authorColor, baseSlug, esc,
+  fmtTok, fmtReq, fmtUsd, bjTime, modelFacts, CATS, PAL, chart,
+  openCardSlug, subscribers: [],
+};
+/* HTML 里的模型名统一点击 → 详情弹层（king 卡 / 维度之最 / 黑马 / 新模型） */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-slug]');
+  if (t) openCardSlug(t.dataset.slug);
+});
 
 /* Streamlit 内嵌时把 iframe 撑到页面真实高度（sandbox 带 allow-same-origin，可直接改 frameElement） */
 if (typeof window !== 'undefined' && window.parent !== window) {
