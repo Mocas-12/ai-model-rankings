@@ -1,9 +1,10 @@
-/* [live] 线上 shape 冒烟：不拦截网络，直连 OpenRouter 验证响应结构未被改版。
+/* @live 线上 shape 冒烟：不拦截网络，直连 OpenRouter 验证响应结构未被改版。
  *  fixture 回放测不出源站结构漂移（漂移时线上会静默空榜），本文件就是那条护栏。
- *  跑法：npm run test:live（CI 里仅每周 schedule job 触发）。 */
+ *  跑法：npm run test:live（CI 里仅每周 schedule job 触发）。
+ *  标记用 @live 而非 [live]：方括号在 bash 下是字符类正则，会误伤 grep 过滤。 */
 import { test, expect } from "@playwright/test";
 
-test("[live] OpenRouter 线上接口 shape 冒烟", async ({ page }) => {
+test("@live OpenRouter 线上接口 shape 冒烟", async ({ page }) => {
   const pageErrors = [];
   page.on("pageerror", e => pageErrors.push(e));
   await page.goto("/");
