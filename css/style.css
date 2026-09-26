@@ -285,8 +285,8 @@ h2 {
 .m-name { font-family: var(--kai); font-size: 24px; letter-spacing: 1px; padding-right: 30px; }
 /* 变体标签：名字右上角小描边标（上标位） */
 .m-name sup.m-chip {
-  font-size: 9px; font-weight: 600; letter-spacing: .5px; line-height: 1;
-  padding: 2px 5px; border-radius: 2px; margin-left: 7px; vertical-align: 14px;
+  font-size: 8px; font-weight: 600; letter-spacing: 0; line-height: 1;
+  padding: 1px 4px; border-radius: 2px; margin-left: 5px; vertical-align: 11px;
   border: 1px solid; background: transparent; font-family: Georgia, serif;
 }
 .m-chip.free { color: var(--teal); border-color: rgba(122, 154, 142, .55); }
