@@ -156,7 +156,7 @@ async function stamp(mode, f) {
     c.fillStyle = authorColor(f.author); c.font = 'bold 52px "PingFang SC", "Microsoft YaHei", sans-serif';
     c.fillText(fitText(c, nameOf(f.slug).replace(/\s*\([^)]*\)/g, ''), 760), W/2, 380);
     c.fillStyle = '#a89f8a'; c.font = '26px "PingFang SC", "Microsoft YaHei", sans-serif';
-    c.fillText(esc(authorName(f.author)) + (f.hasFree ? ' · 有免费变体' : '') + (f.hasBatch ? ' · 支持 batch' : ''), W/2, 430);
+    c.fillText(authorName(f.author) + (f.hasFree ? ' · 有免费变体' : '') + (f.hasBatch ? ' · 支持 batch' : ''), W/2, 430);
     c.strokeStyle = 'rgba(221,214,196,.25)'; c.lineWidth = 1.5;
     c.beginPath(); c.moveTo(120, 486);
     c.bezierCurveTo(360, 478, 640, 494, 880, 484); c.stroke();
