@@ -386,7 +386,7 @@ function renderKings() {
   }
   // 本周黑马
   const cl = (D.disc && D.disc.climbing || []).filter(x => x.weeklyTokens > 1e11).sort((a, b2) => b2.changePercent-a.changePercent)[0];
-  if (cl) html += kingCard('本周黑马', '周用量涨幅', nameOf(cl.variantPermaslug), `周 Token <b>${fmtTok(cl.weeklyTokens)}</b><small> · +${(cl.changePercent*100).toFixed(0)}%</small>`, cl.variantPermaslug, { top1:false });
+  if (cl) html += kingCard('本周黑马', '周用量涨幅', nameOf(cl.variantPermaslug), `周 Token <b>${fmtTok(cl.weeklyTokens)}</b><small> · ${growTxt(cl.changePercent, cl.weeklyTokens, cl.prevWeeklyTokens)}</small>`, cl.variantPermaslug, { top1:false });
   if (html) el.innerHTML = html;
 }
 
@@ -414,7 +414,7 @@ function renderDimTable() {
     .filter(m => m.cost != null).sort((a, b2) => a.cost-b2.cost)[0];
   if (best) rows.push(['性价比', best.permaslug, fmtUsd(best.cost)+' / 次 · 智能 '+best.score.toFixed(1), '成本 × 智能']);
   const cl = (D.disc && D.disc.climbing || []).filter(x => x.weeklyTokens > 1e11).sort((a, b2) => b2.changePercent-a.changePercent)[0];
-  if (cl) rows.push(['周涨幅', cl.variantPermaslug, '+'+(cl.changePercent*100).toFixed(0)+'% · 周 '+fmtTok(cl.weeklyTokens), 'OpenRouter']);
+  if (cl) rows.push(['周涨幅', cl.variantPermaslug, growTxt(cl.changePercent, cl.weeklyTokens, cl.prevWeeklyTokens)+' · 周 '+fmtTok(cl.weeklyTokens), 'OpenRouter']);
   $('#dimtable').innerHTML = `<table class="dim-t"><thead><tr><th>维度</th><th>最强模型</th><th>数值</th><th class="th-src">数据源</th></tr></thead><tbody>` +
     rows.map(r => `<tr data-slug="${esc(r[1])}"><td class="td-cat">${esc(r[0])}</td><td class="td-model">${esc(nameOf(r[1]))}<span class="td-author">${esc(authorName(authorOf(r[1])))}</span></td><td class="td-val">${esc(r[2])}</td><td class="td-src">${esc(r[3])}</td></tr>`).join('') +
     `</tbody></table>`;
@@ -545,6 +545,12 @@ function renderVendors() {
 }
 
 /* ---------- 任务花费 ---------- */
+/* 涨幅文案：暴涨（≥10 倍）用倍数表达——上周基数近零时天文百分比无参考价值 */
+const growTxt = (cp, weekly, prev) => {
+  const ratio = prev > 0 ? weekly / prev : Infinity;
+  if (ratio >= 10) return '×' + Math.round(ratio).toLocaleString('zh-CN') + ' 倍';
+  return (cp >= 0 ? '+' : '') + (cp * 100).toFixed(0) + '%';
+};
 const TASK_CN = { code:'代码', data:'数据', agent:'智能体', general:'通用', creative:'创意', research:'研究', marketing:'营销', education:'教育' };
 function renderSpendTask() {
   const c = chart('chart-spend'); if (!c || !D.spend || !D.spend.spend) return;
@@ -626,7 +632,7 @@ function renderRisers() {
   (d.breakouts || []).slice(0, 2).forEach(x => items.push({ ...x, tag:'爆发' }));
   if (!items.length) { el.innerHTML = '<div class="ph">暂无数据</div>'; return; }
   el.innerHTML = items.map(x => {
-    const g = x.changePercent >= 0 ? '+'+(x.changePercent*100).toFixed(0)+'%' : (x.changePercent*100).toFixed(0)+'%';
+    const g = growTxt(x.changePercent, x.weeklyTokens, x.prevWeeklyTokens);
     return `<div class="riser" data-slug="${esc(x.variantPermaslug)}">
       <div class="r-head"><span class="r-name">${esc(nameOf(x.variantPermaslug))}<span class="r-tag">${x.tag}</span></span>
       <span class="r-grow">${g}</span></div>
