@@ -131,11 +131,12 @@ function aggregateUsage() {
   const m = {};
   D.usage.forEach(r => {
     const b = baseSlug(r.model_permaslug);
-    const o = m[b] || (m[b] = { slug: b, tok: 0, req: 0, freeTok: 0, batchTok: 0 });
+    const o = m[b] || (m[b] = { slug: b, tok: 0, req: 0, stdTok: 0, freeTok: 0, batchTok: 0 });
     const t = r.total_prompt_tokens + r.total_completion_tokens;
     o.tok += t; o.req += r.count || 0;
     if (r.variant === 'free') o.freeTok += t;
     if (r.variant === 'batch') o.batchTok += t;
+    if (r.variant === 'standard') o.stdTok += t;
   });
   return Object.values(m);
 }
@@ -145,7 +146,7 @@ const authorOf = slug => String(slug).includes('/') ? String(slug).split('/')[0]
 function modelFacts(slug) {
   const base = baseSlug(slug);
   const f = { slug: String(slug), base, name: nameOf(slug), author: authorOf(slug) };
-  f.cost = nameIdx.cost[f.slug] ?? nameIdx.cost[base] ?? null;
+  f.cost = nameIdx.cost[base] ?? null;
   const aa = nameIdx.base2aa[base] || {};
   f.aa = { intelligence: aa.intelligence ? aa.intelligence.score : null,
            coding: aa.coding ? aa.coding.score : null, agentic: aa.agentic ? aa.agentic.score : null };
@@ -154,7 +155,8 @@ function modelFacts(slug) {
   let tok = 0, req = 0;
   D.usage.forEach(r => { if (baseSlug(r.model_permaslug) === base) { tok += r.total_prompt_tokens+r.total_completion_tokens; req += r.count || 0; if (r.variant === 'free') f.hasFree = true; if (r.variant === 'batch') f.hasBatch = true; } });
   f.tok24h = tok; f.req24h = req;
-  const p = D.perf.find(x => baseSlug(x.slug) === base && x.p50_latency);
+  const perfCands = D.perf.filter(x => baseSlug(x.slug) === base && x.p50_latency);
+  const p = perfCands.sort((a, b) => (b.request_count || 0)-(a.request_count || 0))[0];
   if (p) { f.p50 = p.p50_latency; f.tps = p.p50_throughput; f.fastProv = p.best_latency_provider; f.fastPrice = p.best_latency_price; }
   if (D.catalog) {
     const raw = D.catalog.raw.filter(m => !m.hidden && (m.slug === f.slug || baseSlug(m.slug) === base));
@@ -259,7 +261,14 @@ function prepareBench() {
       nameIdx.base2da[base][k] = { score:m.score, name:m.display_name, win:m.win_rate };
     });
   });
-  nameIdx.cost = b.costPerRequest || {};
+  // cost 归并为 base 级最低价：原始字典约六成键带日期（同模型多版本价不同），
+  // 不归并则弹层/性价比/对比器取到哪个版本看键命中运气。与降价榜快照同口径。
+  nameIdx.cost = {};
+  Object.entries(b.costPerRequest || {}).forEach(([k, v]) => {
+    if (!v) return;
+    const b2 = baseSlug(k);
+    nameIdx.cost[b2] = Math.min(v, nameIdx.cost[b2] ?? Infinity);
+  });
 }
 
 /* catalog 懒加载 → 名称升级后重渲染 */
@@ -328,7 +337,7 @@ function renderUsage() {
     tooltip: Object.assign({ trigger:'axis', axisPointer:{type:'shadow'}, formatter(ps) {
       const r = rows[ps[0].dataIndex];
       const mix = r.tok > 0
-        ? [r.tok-r.freeTok-r.batchTok > 0 ? '标准 '+(100*(1-(r.freeTok+r.batchTok)/r.tok)).toFixed(0)+'%' : '',
+        ? [r.stdTok > 0 ? '标准 '+(r.stdTok/r.tok*100).toFixed(0)+'%' : '',
            r.freeTok > 0 ? 'free '+(r.freeTok/r.tok*100).toFixed(0)+'%' : '',
            r.batchTok > 0 ? 'batch '+(r.batchTok/r.tok*100).toFixed(0)+'%' : ''].filter(Boolean).join(' · ')
         : '';
@@ -378,7 +387,7 @@ function renderKings() {
   });
   // 性价比之王：智能指数 top30 里单请求成本最低
   const aaList = [...(aa.intelligence || [])].sort((a, b2) => b2.score-a.score).slice(0, 30)
-    .map(m => ({ ...m, cost: nameIdx.cost[m.permaslug] ?? nameIdx.cost[baseSlug(m.permaslug)] }))
+    .map(m => ({ ...m, cost: nameIdx.cost[baseSlug(m.permaslug)] }))
     .filter(m => m.cost != null).sort((a, b2) => a.cost-b2.cost);
   if (aaList.length) {
     const m = aaList[0];
@@ -410,7 +419,7 @@ function renderDimTable() {
     if (m) rows.push([label, m.permaslug, 'ELO '+Math.round(m.score)+' · 胜率 '+(m.win_rate != null ? m.win_rate.toFixed(0)+'%' : '--'), 'Design Arena']);
   });
   const best = [...(aa.intelligence || [])].sort((a, b2) => b2.score-a.score).slice(0, 30)
-    .map(m => ({ ...m, cost: nameIdx.cost[m.permaslug] ?? nameIdx.cost[baseSlug(m.permaslug)] }))
+    .map(m => ({ ...m, cost: nameIdx.cost[baseSlug(m.permaslug)] }))
     .filter(m => m.cost != null).sort((a, b2) => a.cost-b2.cost)[0];
   if (best) rows.push(['性价比', best.permaslug, fmtUsd(best.cost)+' / 次 · 智能 '+best.score.toFixed(1), '成本 × 智能']);
   const cl = (D.disc && D.disc.climbing || []).filter(x => x.weeklyTokens > 1e11).sort((a, b2) => b2.changePercent-a.changePercent)[0];
@@ -426,7 +435,7 @@ function renderValue() {
   const pts = [...((D.bench.aaData || {}).intelligence || [])]
     .map(m => {
       const base = baseSlug(m.permaslug);
-      return { slug:m.permaslug, score:m.score, cost:nameIdx.cost[m.permaslug] ?? nameIdx.cost[base] };
+      return { slug:m.permaslug, score:m.score, cost:nameIdx.cost[base] };
     })
     .filter(m => m.cost != null && m.cost > 0);
   if (!pts.length) return;
@@ -495,7 +504,7 @@ function renderSpeed() {
 /* ---------- 趋势 ---------- */
 function renderTrend() {
   const c = chart('chart-trend'); if (!c || !Array.isArray(D.trend) || !D.trend.length) return;
-  let rows = D.trend;
+  let rows = D.trend.slice(-30);   // 标题「30 天」，接口给 53 天，裁齐
   // 末尾当天数据未跑完（总量 < 峰值 30%）则不画，避免全线坠零
   const dayTotals = rows.map(d => Object.values(d.ys || {}).reduce((s, v) => s+v, 0));
   const mxDay = Math.max(...dayTotals, 1);
@@ -529,7 +538,12 @@ function renderVendors() {
     tooltip: Object.assign({ trigger:'item', formatter(p) {
       const r = rows[p.dataIndex];
       const g = r.changePercent != null ? (r.changePercent >= 0 ? '<span style="color:#e0654f">+'+(r.changePercent*100).toFixed(1)+'%</span>' : '<span style="color:#8d8677">'+(r.changePercent*100).toFixed(1)+'%</span>') : '';
-      return `<b>${esc(authorName(r.author))}</b><br>周 Token：${fmtTok(r.weeklyTokens)}<br>份额：${(r.share*100).toFixed(1)}% ${g ? '· 环比 '+g : ''}`;
+      const shareSum = rows.reduce((s, x) => s + (x.share || 0), 0);
+      const tail = 100 - shareSum;
+      const sane = shareSum > 50 && shareSum <= 102;   // 边缘节点偶发坏 share，异常时跳过份额行
+      return `<b>${esc(authorName(r.author))}</b><br>周 Token：${fmtTok(r.weeklyTokens)}` +
+        (sane ? `<br>份额：${(r.share*100).toFixed(1)}% ${g ? '· 环比 '+g : ''}` +
+          (tail > 0.05 ? `<br><span style="color:#7a7260">其余长尾厂商合计 ${tail.toFixed(1)}%（未展示）</span>` : '') : '<br><span style="color:#7a7260">份额数据波动中</span>');
     } }, TIP),
     legend: nar
       ? { orient:'horizontal', bottom:0, left:'center', textStyle:{ color:'#b5ad99', fontSize:10 }, itemWidth:10, itemHeight:10 }
@@ -545,11 +559,10 @@ function renderVendors() {
 }
 
 /* ---------- 任务花费 ---------- */
-/* 涨幅文案：暴涨（≥10 倍）用倍数表达——上周基数近零时天文百分比无参考价值 */
+/* 涨幅文案：统一百分比（千分位分隔，近零基数的暴涨也会得出大数，但口径全站一致） */
 const growTxt = (cp, weekly, prev) => {
-  const ratio = prev > 0 ? weekly / prev : Infinity;
-  if (ratio >= 10) return '×' + Math.round(ratio).toLocaleString('zh-CN') + ' 倍';
-  return (cp >= 0 ? '+' : '') + (cp * 100).toFixed(0) + '%';
+  if (!(prev > 0) || !isFinite(cp)) return '+NEW';
+  return (cp >= 0 ? '+' : '') + Math.round(cp * 100).toLocaleString('zh-CN') + '%';
 };
 const TASK_CN = { code:'代码', data:'数据', agent:'智能体', general:'通用', creative:'创意', research:'研究', marketing:'营销', education:'教育' };
 function renderSpendTask() {
