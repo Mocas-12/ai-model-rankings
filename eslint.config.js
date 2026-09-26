@@ -17,6 +17,7 @@ module.exports = [
         console: "readonly", sessionStorage: "readonly",
         setTimeout: "readonly", setInterval: "readonly",
         clearTimeout: "readonly", clearInterval: "readonly",
+        requestAnimationFrame: "readonly", cancelAnimationFrame: "readonly",
         fetch: "readonly", AbortController: "readonly",
         location: "readonly", history: "readonly",
         URL: "readonly", URLSearchParams: "readonly",
