@@ -123,7 +123,7 @@ function renderFree() {
       label: { show:true, position:'right', color:'#a89f8a', fontSize:11, formatter:p => fmtTok(p.value) },
       itemStyle: { borderRadius:[0, 2, 2, 0], color:'#7a9a8e' } }],
   }, { notMerge: true });
-  c.off('click'); c.on('click', p => { if (p.componentType === 'series') window.MB.openCardSlug(rows[p.dataIndex][0]); });
+  c.off('click'); c.on('click', p => { if (p.componentType === 'series') window.MB.openCardSlug(rows[p.dataIndex][0], c.getDom()); });
 }
 
 /* ---------------- 国产对决 ---------------- */

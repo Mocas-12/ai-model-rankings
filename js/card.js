@@ -13,17 +13,28 @@ let lastFacts = null;
 let lastFocus = null;   // 打开弹层前的焦点元素：关闭时还原，避免 focus 把页面滚回顶部
 let lastScroll = 0;     // 打开前的滚动位置，开启期间每帧钉住（focus 的 scroll-into-view 动画在部分环境绕不过 preventScroll）
 let pinRaf = 0;
+let anchored = false;   // Streamlit 撑高 iframe 模式：fixed 相对整个文档顶，需锚定到触发元素附近
 function pinScroll() {
   if ($('#modal').hidden) return;
+  if (anchored) return;   // 锚定模式下父页滚动已锁，无需钉
   if (Math.abs(window.scrollY - lastScroll) > 2) window.scrollTo({ top: lastScroll, behavior: 'instant' });
   pinRaf = requestAnimationFrame(pinScroll);
+}
+function parentViewportH() {
+  try { return window.parent !== window ? window.parent.innerHeight : window.innerHeight; } catch { return 700; }
+}
+function lockParentScroll(on) {
+  try {
+    if (window.parent === window) return;
+    window.parent.document.documentElement.style.overflow = on ? 'hidden' : '';
+  } catch {}   // 跨源兜底：拿不到父页就放弃锁定
 }
 
 /* ---------------- 详情弹层 ---------------- */
 function stat(label, val, cls) {
   return `<div class="m-stat${cls ? ' ' + cls : ''}"><small>${label}</small><b>${val}</b></div>`;
 }
-function openCard(slug) {
+function openCard(slug, anchorEl) {
   const f = modelFacts(slug);
   lastFacts = f;
   const ctx = f.ctx ? (f.ctx >= 1e6 ? (f.ctx/1e6).toFixed(1).replace(/\.0$/, '') + 'M' : Math.round(f.ctx/1000) + 'K') : '--';
@@ -45,22 +56,44 @@ function openCard(slug) {
     stat('上下文', ctx) +
     (f.fastProv ? stat('最快线路', esc(f.fastProv) + ' ' + fmtUsd(f.fastPrice || 0) + '/M') : '') +
     '</div>' + (daRows ? `<div class="m-grid m-da">${daRows}</div>` : '');
-  $('#modal').hidden = false;
+  const modal = $('#modal');
+  modal.hidden = false;
   lastFocus = document.activeElement;
   lastScroll = window.scrollY;
-  document.documentElement.style.overflow = 'hidden';   // 锁背景滚动
+  /* Streamlit 撑高 iframe：fixed 钉在整个文档顶（用户视口之外）。改为 absolute，
+   * top 锚到触发元素的文档位置、高度=父页真实视口，弹层出现在用户眼前。 */
+  anchored = window.parent !== window;
+  if (anchored) {
+    const vh = parentViewportH();
+    const rect = anchorEl && anchorEl.getBoundingClientRect();
+    let top = rect ? rect.top + window.scrollY : lastScroll;
+    top = Math.max(0, top - 60);
+    const docH = document.documentElement.scrollHeight;
+    modal.classList.add('modal-anchored');
+    modal.style.top = Math.min(top, Math.max(0, docH - vh)) + 'px';
+    modal.style.height = vh + 'px';
+    lockParentScroll(true);
+  } else {
+    modal.classList.remove('modal-anchored');
+    modal.style.top = modal.style.height = '';
+    document.documentElement.style.overflow = 'hidden';
+  }
   try { $('#modal-close').focus({ preventScroll: true }); } catch { $('#modal-close').focus(); }
   cancelAnimationFrame(pinRaf); pinRaf = requestAnimationFrame(pinScroll);
 }
 function closeCard() {
   $('#modal').hidden = true;
+  $('#modal').classList.remove('modal-anchored');
+  $('#modal').style.top = $('#modal').style.height = '';
   document.documentElement.style.overflow = '';
+  if (anchored) lockParentScroll(false);
+  anchored = false;
   cancelAnimationFrame(pinRaf);
   if (lastFocus && lastFocus.focus) {
     try { lastFocus.focus({ preventScroll: true }); } catch { lastFocus.focus(); }
   }
   requestAnimationFrame(() => {
-    if (Math.abs(window.scrollY - lastScroll) > 5) window.scrollTo({ top: lastScroll, behavior: 'instant' });
+    if (!anchored && Math.abs(window.scrollY - lastScroll) > 5) window.scrollTo({ top: lastScroll, behavior: 'instant' });
   });
 }
 $('#modal-close').addEventListener('click', closeCard);

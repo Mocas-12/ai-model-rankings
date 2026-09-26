@@ -326,3 +326,7 @@ h2 {
   .tab { padding: 5px 10px; font-size: 12px; }
   .foot { font-size: 12px; }
 }
+
+/* ---------- 内嵌锚定模式（Streamlit 撑高 iframe 下弹层贴着点击位置弹出） ---------- */
+#modal.modal-anchored { position: absolute; }
+#modal.modal-anchored .modal-card { margin: 20px auto; max-height: calc(100% - 40px); }

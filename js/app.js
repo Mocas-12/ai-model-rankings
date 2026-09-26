@@ -278,7 +278,7 @@ function chart(id) {
 }
 const safe = (name, fn) => { try { fn(); } catch (e) { console.error('[llmranks]', name, e); window.__errs = (window.__errs || []).concat(name+': '+e.message+' @ '+(e.stack||'').split('\n')[1]); } };
 /* 图形点击 → 模型详情弹层（弹层本体在 js/card.js） */
-const openCardSlug = s => { if (s && window.MB && window.MB.openCard) window.MB.openCard(s); };
+const openCardSlug = (s, el) => { if (s && window.MB && window.MB.openCard) window.MB.openCard(s, el); };
 
 /* ---------- KPI ---------- */
 function renderKPI() {
@@ -323,7 +323,7 @@ function renderUsage() {
       itemStyle: { borderRadius:[0, 2, 2, 0], color: p => authorColor(authorOf(rows[p.dataIndex].model_permaslug)) },
     }],
   }, { notMerge:true });
-  c.off('click'); c.on('click', p => { if (p.componentType === 'series') openCardSlug(rows[p.dataIndex].model_permaslug); });
+  c.off('click'); c.on('click', p => { if (p.componentType === 'series') openCardSlug(rows[p.dataIndex].model_permaslug, c.getDom()); });
 }
 
 /* ---------- 分项王者 ---------- */
@@ -436,7 +436,7 @@ function renderValue() {
       emphasis: { scale:1.15 },
     }],
   }, { notMerge:true });
-  c.off('click'); c.on('click', p => { if (p.componentType === 'series') openCardSlug(p.name); });
+  c.off('click'); c.on('click', p => { if (p.componentType === 'series') openCardSlug(p.name, c.getDom()); });
 }
 
 /* ---------- 速度榜 ---------- */
@@ -466,7 +466,7 @@ function renderSpeed() {
       labelLayout: { hideOverlap:true, moveOverlap:'shiftY' },
     }],
   }, { notMerge:true });
-  c.off('click'); c.on('click', p => { if (p.componentType === 'series') openCardSlug(p.name); });
+  c.off('click'); c.on('click', p => { if (p.componentType === 'series') openCardSlug(p.name, c.getDom()); });
 }
 
 /* ---------- 趋势 ---------- */
@@ -494,7 +494,7 @@ function renderTrend() {
       emphasis:{ focus:'series' },
     })),
   }, { notMerge:true });
-  c.off('click'); c.on('click', p => { if (p.componentType === 'series' && top[p.seriesIndex]) openCardSlug(top[p.seriesIndex]); });
+  c.off('click'); c.on('click', p => { if (p.componentType === 'series' && top[p.seriesIndex]) openCardSlug(top[p.seriesIndex], c.getDom()); });
 }
 
 /* ---------- 厂商份额 ---------- */
@@ -582,7 +582,7 @@ function renderCat() {
       itemStyle: { borderRadius:[0, 2, 2, 0], color: p => authorColor(authorOf(rows[p.dataIndex][0])) },
     }],
   }, { notMerge:true });
-  c.off('click'); c.on('click', p => { if (p.componentType === 'series') openCardSlug(rows[p.dataIndex][0]); });
+  c.off('click'); c.on('click', p => { if (p.componentType === 'series') openCardSlug(rows[p.dataIndex][0], c.getDom()); });
 }
 
 /* ---------- 本周黑马 ---------- */
@@ -720,7 +720,7 @@ if (typeof window !== 'undefined') window.MB = {
 /* HTML 里的模型名统一点击 → 详情弹层（king 卡 / 维度之最 / 黑马 / 新模型） */
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-slug]');
-  if (t) openCardSlug(t.dataset.slug);
+  if (t) openCardSlug(t.dataset.slug, t);
 });
 
 /* Streamlit 内嵌时把 iframe 撑到页面真实高度（sandbox 带 allow-same-origin，可直接改 frameElement） */
