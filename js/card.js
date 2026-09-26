@@ -38,7 +38,7 @@ function openCard(slug, anchorEl) {
   const f = modelFacts(slug);
   lastFacts = f;
   const ctx = f.ctx ? (f.ctx >= 1e6 ? (f.ctx/1e6).toFixed(1).replace(/\.0$/, '') + 'M' : Math.round(f.ctx/1000) + 'K') : '--';
-  const chips = (f.hasFree ? '<span class="k-chip free">FREE</span>' : '') + (f.hasBatch ? '<span class="k-chip batch">BATCH</span>' : '');
+  const chips = (f.hasFree ? '<sup class="m-chip free">FREE</sup>' : '') + (f.hasBatch ? '<sup class="m-chip batch">BATCH</sup>' : '');
   const daRows = Object.entries(f.da).map(([k, v]) =>
     stat(DA_LABEL[k] || k, Math.round(v.elo) + (v.win != null ? ' <small>胜' + v.win.toFixed(0) + '%</small>' : ''))).join('');
   $('#modal-body').innerHTML =
