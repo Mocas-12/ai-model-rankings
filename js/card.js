@@ -4,7 +4,7 @@
  * 消费 js/app.js 的 window.MB；卡片风格与站点绢本夜山水墨一致。 */
 (() => {
 'use strict';
-const { D, esc, fmtTok, fmtReq, fmtUsd, nameOf, authorName, authorOf, authorColor, bjTime, modelFacts } = window.MB;
+const { esc, fmtTok, fmtReq, fmtUsd, nameOf, authorName, authorOf, authorColor, bjTime, modelFacts } = window.MB;
 const $ = s => document.querySelector(s);
 const CN_NUM = ['壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖', '拾'];
 const DA_LABEL = { 'models-website': '网页开发', 'models-uicomponent': 'UI 组件', 'models-dataviz': '数据可视化',
