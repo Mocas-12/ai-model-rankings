@@ -54,10 +54,10 @@ def main():
         json.dumps({"date": today, "cost": clean}, ensure_ascii=False, sort_keys=True),
         encoding="utf-8",
     )
-    files = sorted(p.name for p in DIR.glob("*.json"))
+    files = sorted(p.name for p in DIR.glob("*.json") if p.name != "index.json")
     for old in files[:-KEEP]:  # 滚动清理
         (DIR / old).unlink()
-    files = sorted(p.name for p in DIR.glob("*.json"))
+    files = sorted(p.name for p in DIR.glob("*.json") if p.name != "index.json")
     (DIR / "index.json").write_text(
         json.dumps({"files": files}, ensure_ascii=False), encoding="utf-8"
     )

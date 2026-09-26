@@ -337,3 +337,9 @@ h2 {
 /* ---------- 内嵌锚定模式（Streamlit 撑高 iframe 下弹层贴着点击位置弹出） ---------- */
 #modal.modal-anchored { position: absolute; top: 0; height: 100%; }   /* 遮罩盖全页面 */
 #modal.modal-anchored .modal-card { position: absolute; left: 0; right: 0; margin: 0 auto; }   /* 卡片由 JS 锚定到点击处 */
+
+@media (max-width: 640px) {
+  /* 对比/降价表：数值列不折行，表头缩字号减少竖排 */
+  .t-table th { font-size: 10.5px; padding: 5px 6px; }
+  .t-table th:nth-child(n+2), .t-table td:nth-child(n+2) { white-space: nowrap; }
+}

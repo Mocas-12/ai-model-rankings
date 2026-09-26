@@ -139,10 +139,11 @@ function renderCn() {
 async function loadSnapshots() {
   if (priceCache.data && Date.now() - priceCache.t < 600000) return priceCache.data;
   const idx = await (await fetch('data/snapshots/index.json', { cache: 'no-cache' })).json();
-  const files = idx.files.sort().slice(-8);
+  const files = (idx.files || []).filter(f => f !== 'index.json').sort().slice(-8);
   if (files.length < 2) throw new Error('快照不足两份');
   const prev = await (await fetch('data/snapshots/' + files[files.length - 2], { cache: 'no-cache' })).json();
   const cur = await (await fetch('data/snapshots/' + files[files.length - 1], { cache: 'no-cache' })).json();
+  if (!prev.cost || !cur.cost) throw new Error('快照缺 cost 字段');
   priceCache = { t: Date.now(), data: { prev, cur } };
   return priceCache.data;
 }
