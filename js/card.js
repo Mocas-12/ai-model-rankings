@@ -62,20 +62,23 @@ function openCard(slug, anchorEl) {
   lastScroll = window.scrollY;
   /* Streamlit 撑高 iframe：fixed 钉在整个文档顶（用户视口之外）。改为 absolute，
    * top 锚到触发元素的文档位置、高度=父页真实视口，弹层出现在用户眼前。 */
+  const card = $('.modal-card');
   anchored = window.parent !== window;
   if (anchored) {
     const vh = parentViewportH();
     const rect = anchorEl && anchorEl.getBoundingClientRect();
-    let top = rect ? rect.top + window.scrollY : lastScroll;
-    top = Math.max(0, top - 60);
+    let top = (rect ? rect.top + window.scrollY : lastScroll) - 60;
     const docH = document.documentElement.scrollHeight;
+    top = Math.max(12, Math.min(top, docH - vh - 12));
     modal.classList.add('modal-anchored');
-    modal.style.top = Math.min(top, Math.max(0, docH - vh)) + 'px';
-    modal.style.height = vh + 'px';
+    modal.style.top = modal.style.height = '';   // 容器盖全页面，遮罩全页变暗
+    card.style.top = top + 'px';                 // 卡片锚定在点击处
+    card.style.maxHeight = (vh - 24) + 'px';
     lockParentScroll(true);
   } else {
     modal.classList.remove('modal-anchored');
     modal.style.top = modal.style.height = '';
+    card.style.top = card.style.maxHeight = '';
     document.documentElement.style.overflow = 'hidden';
   }
   try { $('#modal-close').focus({ preventScroll: true }); } catch { $('#modal-close').focus(); }
@@ -85,6 +88,7 @@ function closeCard() {
   $('#modal').hidden = true;
   $('#modal').classList.remove('modal-anchored');
   $('#modal').style.top = $('#modal').style.height = '';
+  $('#modal .modal-card').style.top = $('#modal .modal-card').style.maxHeight = '';
   document.documentElement.style.overflow = '';
   if (anchored) lockParentScroll(false);
   anchored = false;

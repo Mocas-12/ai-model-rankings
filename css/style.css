@@ -335,5 +335,5 @@ h2 {
 }
 
 /* ---------- 内嵌锚定模式（Streamlit 撑高 iframe 下弹层贴着点击位置弹出） ---------- */
-#modal.modal-anchored { position: absolute; }
-#modal.modal-anchored .modal-card { margin: 20px auto; max-height: calc(100% - 40px); }
+#modal.modal-anchored { position: absolute; top: 0; height: 100%; }   /* 遮罩盖全页面 */
+#modal.modal-anchored .modal-card { position: absolute; left: 0; right: 0; margin: 0 auto; }   /* 卡片由 JS 锚定到点击处 */
