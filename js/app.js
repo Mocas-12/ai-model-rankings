@@ -108,7 +108,7 @@ function nameOf(slug) {
   const cat = D.catalog;
   if (cat) {
     const hit = cat.bySlug[slug] || cat.byBase[baseSlug(slug)];
-    if (hit) return hit.replace(/\s*\((?:batch|free)\)\s*$/i, '');   // 剥变体后缀，全站显示统一
+    if (hit) return hit.replace(/\s*[（(](?:batch|free|thinking|search)[)）]\s*$/i, '');   // 剥变体后缀（兼容全角括号），全站显示统一
   }
   const b = baseSlug(slug);
   if (nameIdx.base2aa[b]) {
