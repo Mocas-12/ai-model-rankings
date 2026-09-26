@@ -15,7 +15,7 @@
 
 <p align="center"><b><a href="https://ai-model-rankings.streamlit.app/">🌐 Live Demo (ai-model-rankings.streamlit.app)</a></b></p>
 
-<p align="center"><b>English</b> | <a href="./README.zh-CN.md">简体中文</a></p>
+<p align="center"><b>English</b> | <a href="./README.zh-CN.md">简体中文</a> | <a href="./README.ja-JP.md">日本語</a></p>
 
 <p align="center"><i>榜如水墨，浓淡随时 — rankings refreshed like ink, every 5 minutes.</i></p>
 
