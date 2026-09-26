@@ -170,21 +170,21 @@ async function stamp(mode, f) {
     const meta = [f.req24h ? '24h 请求 ' + fmtReq(f.req24h) : '', f.ctx ? '上下文 ' + (f.ctx >= 1e6 ? (f.ctx/1e6).toFixed(1).replace(/\.0$/, '') + 'M' : Math.round(f.ctx/1000) + 'K') : '', f.tps ? Math.round(f.tps) + ' tok/s' : ''].filter(Boolean).join(' · ');
     if (meta) { c.fillStyle = '#a89f8a'; c.font = '22px "PingFang SC", "Microsoft YaHei", sans-serif'; c.fillText(meta, W/2, 900); }
   } else {
-    const rows = [...D.usage].sort((a, b) =>
-      (b.total_prompt_tokens+b.total_completion_tokens)-(a.total_prompt_tokens+a.total_completion_tokens)).slice(0, 5);
-    const mx = Math.max(...rows.map(r => r.total_prompt_tokens+r.total_completion_tokens), 1);
+    const { aggregateUsage } = window.MB;
+    const rows = aggregateUsage().sort((a, b) => b.tok-a.tok).slice(0, 5);
+    const mx = Math.max(...rows.map(r => r.tok), 1);
     c.fillStyle = '#ddd6c4'; c.font = '34px KaiTi, serif'; c.textAlign = 'left';
     c.fillText('今日 Token 五强', 100, 340);
     rows.forEach((r, i) => {
-      const y = 430 + i * 130, tok = r.total_prompt_tokens + r.total_completion_tokens;
+      const y = 430 + i * 130;
       c.fillStyle = '#e0654f'; c.font = '30px KaiTi, serif'; c.textAlign = 'left';
       c.fillText(CN_NUM[i], 100, y);
       c.fillStyle = '#ddd6c4'; c.font = '28px "PingFang SC", "Microsoft YaHei", sans-serif';
-      c.fillText(fitText(c, nameOf(r.model_permaslug), 480), 155, y);
-      c.fillStyle = authorColor(authorOf(r.model_permaslug));
-      c.fillRect(155, y + 22, Math.max(30, (tok/mx) * 560), 18);
+      c.fillText(fitText(c, nameOf(r.slug), 480), 155, y);
+      c.fillStyle = authorColor(authorOf(r.slug));
+      c.fillRect(155, y + 22, Math.max(30, (r.tok/mx) * 560), 18);
       c.fillStyle = '#a89f8a'; c.font = '22px Georgia, serif'; c.textAlign = 'right';
-      c.fillText(fmtTok(tok), W - 100, y);
+      c.fillText(fmtTok(r.tok), W - 100, y);
       c.textAlign = 'left';
     });
     c.fillStyle = '#7a7260'; c.font = '22px sans-serif'; c.textAlign = 'center';

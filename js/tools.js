@@ -3,7 +3,7 @@
  * 工具箱默认折叠，点开 tab 才渲染；MB.subscribers 在每次 renderAll 后触发刷新。 */
 (() => {
 'use strict';
-const { D, esc, fmtTok, fmtReq, fmtUsd, nameOf, authorName, authorOf, authorColor, baseSlug, chart, modelFacts, isNarrow } = window.MB;
+const { D, esc, fmtTok, fmtReq, fmtUsd, nameOf, authorName, authorOf, authorColor, baseSlug, chart, modelFacts, isNarrow, aggregateUsage } = window.MB;
 const $ = s => document.querySelector(s);
 const CN_AUTHORS = new Set(['deepseek', 'z-ai', 'moonshotai', 'qwen', 'minimax', 'bytedance', 'tencent',
   'baidu', 'xiaomi', 'alibaba', 'inclusionai', 'stepfun', 'thudm', 'kwaivgi', 'nexai']);
@@ -30,19 +30,6 @@ function showTool(key) {
 function renderTool(key) {
   if (!D.usage.length && key !== 'price') return;   // 数据未就绪时等 subscribers 再渲染
   ({ free: renderFree, cn: renderCn, price: renderPrice, calc: renderCalc, vs: renderVs })[key]();
-}
-
-/* ---------------- usage 按 base 聚合 ---------------- */
-function usageByBase() {
-  const m = {};
-  D.usage.forEach(r => {
-    const b = baseSlug(r.model_permaslug);
-    const o = m[b] || (m[b] = { tok: 0, req: 0, free: false, slug: r.model_permaslug });
-    o.tok += r.total_prompt_tokens + r.total_completion_tokens;
-    o.req += r.count || 0;
-    if (r.variant === 'free') { o.free = true; }
-  });
-  return m;
 }
 
 /* ---------------- 模型对比 ---------------- */
@@ -105,34 +92,33 @@ function renderVs() {
 
 /* ---------------- 白嫖榜 ---------------- */
 function renderFree() {
-  const m = usageByBase();
-  const rows = Object.entries(m).filter(([, o]) => o.free).sort((a, b) => b[1].tok - a[1].tok).slice(0, 12);
+  const rows = aggregateUsage().filter(r => r.freeTok > 0).sort((a, b) => b.freeTok - a.freeTok).slice(0, 12);
   if (!rows.length) { $('#chart-free').innerHTML = '<div class="ph">当前 24h 无 free 变体调用</div>'; return; }
   const c = chart('chart-free');
   if (!c) return;
   c.setOption({
     tooltip: { trigger:'axis', axisPointer:{type:'shadow'}, confine:true,
       formatter(ps) {
-        const f = modelFacts(rows[ps[0].dataIndex][0]);
-        return `<b>${esc(f.name)}</b><br>free Token：${fmtTok(rows[ps[0].dataIndex][1].tok)}<br>综合智能：${f.aa.intelligence != null ? f.aa.intelligence.toFixed(1) : '--'}`;
+        const r = rows[ps[0].dataIndex];
+        const f = modelFacts(r.slug);
+        return `<b>${esc(f.name)}</b><br>free Token：${fmtTok(r.freeTok)}<br>综合智能：${f.aa.intelligence != null ? f.aa.intelligence.toFixed(1) : '--'}`;
       } },
     grid: { left:8, right: isNarrow()?54:90, top:10, bottom:10, containLabel:true },
     xAxis: { type:'value', axisLine:{lineStyle:{color:'#454036'}}, axisTick:{show:false}, axisLabel:{ color:'#a89f8a', fontSize:11, formatter:fmtTok }, splitLine:{lineStyle:{color:'#322d25'}} },
-    yAxis: { type:'category', inverse:true, data:rows.map(r => nameOf(r[0])), axisLine:{lineStyle:{color:'#454036'}}, axisTick:{show:false}, axisLabel:{ color:'#ddd6c4', fontSize:12, width: isNarrow()?104:170, overflow:'truncate' } },
-    series: [{ type:'bar', data:rows.map(r => r[1].tok), barWidth:'56%',
+    yAxis: { type:'category', inverse:true, data:rows.map(r => nameOf(r.slug)), axisLine:{lineStyle:{color:'#454036'}}, axisTick:{show:false}, axisLabel:{ color:'#ddd6c4', fontSize:12, width: isNarrow()?104:170, overflow:'truncate' } },
+    series: [{ type:'bar', data:rows.map(r => r.freeTok), barWidth:'56%',
       label: { show:true, position:'right', color:'#a89f8a', fontSize:11, formatter:p => fmtTok(p.value) },
       itemStyle: { borderRadius:[0, 2, 2, 0], color:'#7a9a8e' } }],
   }, { notMerge: true });
-  c.off('click'); c.on('click', p => { if (p.componentType === 'series') window.MB.openCardSlug(rows[p.dataIndex][0], c.getDom()); });
+  c.off('click'); c.on('click', p => { if (p.componentType === 'series') window.MB.openCardSlug(rows[p.dataIndex].slug, c.getDom()); });
 }
 
 /* ---------------- 国产对决 ---------------- */
 function renderCn() {
-  const m = usageByBase();
   const g = { cn: { tok: 0, rows: [] }, intl: { tok: 0, rows: [] } };
-  Object.entries(m).forEach(([b, o]) => {
-    const side = CN_AUTHORS.has(authorOf(o.slug)) ? g.cn : g.intl;
-    side.tok += o.tok; side.rows.push([b, o]);
+  aggregateUsage().forEach(r => {
+    const side = CN_AUTHORS.has(authorOf(r.slug)) ? g.cn : g.intl;
+    side.tok += r.tok; side.rows.push([r.slug, r]);
   });
   const total = g.cn.tok + g.intl.tok;
   if (!total) { $('#tool-cn').innerHTML = '<div class="ph">暂无数据</div>'; return; }
@@ -202,8 +188,7 @@ function renderCalc() {
 function fillList() {
   const dl = $('#vs-list');
   if (dl.options.length) return;
-  const m = usageByBase();
-  const slugs = Object.entries(m).sort((a, b) => b[1].tok - a[1].tok).map(([, o]) => o.slug).slice(0, 200);
+  const slugs = aggregateUsage().sort((a, b) => b.tok - a.tok).map(r => r.slug).slice(0, 200);
   dl.innerHTML = slugs.map(s => `<option value="${esc(s)}">${esc(nameOf(s))}</option>`).join('');
 }
 

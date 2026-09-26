@@ -108,7 +108,7 @@ function nameOf(slug) {
   const cat = D.catalog;
   if (cat) {
     const hit = cat.bySlug[slug] || cat.byBase[baseSlug(slug)];
-    if (hit) return hit;
+    if (hit) return hit.replace(/\s*\((?:batch|free)\)\s*$/i, '');   // 剥变体后缀，全站显示统一
   }
   const b = baseSlug(slug);
   if (nameIdx.base2aa[b]) {
@@ -124,6 +124,20 @@ function nameOf(slug) {
   const toks = rest.join('/').split('-').filter(t => t && !/^(19|20)\d{6}/.test(t) && !/^\d{3,8}$/.test(t));
   const pretty = toks.map(t => /^\d/.test(t) || /[.\d]/.test(t) ? t.toUpperCase() : t.charAt(0).toUpperCase()+t.slice(1)).join(' ');
   return (rest.length ? authorName(auth)+' ' : '') + (pretty || slug);
+}
+/* 全站统一的用量口径：按模型（base）聚合全部变体行。
+ * 页面榜 / KPI 魁首 / 拓印卡 / 详情弹层共用，保证数字处处一致。 */
+function aggregateUsage() {
+  const m = {};
+  D.usage.forEach(r => {
+    const b = baseSlug(r.model_permaslug);
+    const o = m[b] || (m[b] = { slug: b, tok: 0, req: 0, freeTok: 0, batchTok: 0 });
+    const t = r.total_prompt_tokens + r.total_completion_tokens;
+    o.tok += t; o.req += r.count || 0;
+    if (r.variant === 'free') o.freeTok += t;
+    if (r.variant === 'batch') o.batchTok += t;
+  });
+  return Object.values(m);
 }
 const authorOf = slug => String(slug).includes('/') ? String(slug).split('/')[0] : '';
 
@@ -287,7 +301,7 @@ function renderKPI() {
   const req  = rows.reduce((s, r) => s + (r.count || 0), 0);
   const freeTok = rows.filter(r => r.variant === 'free').reduce((s, r) => s + r.total_prompt_tokens + r.total_completion_tokens, 0);
   const bases = new Set(rows.map(r => baseSlug(r.model_permaslug)));
-  const top = [...rows].sort((a, b) => (b.total_prompt_tokens+b.total_completion_tokens)-(a.total_prompt_tokens+a.total_completion_tokens))[0];
+  const top = aggregateUsage().sort((a, b) => b.tok-a.tok)[0];
   const cards = $('#kpis').children;
   cards[0].classList.remove('skeleton'); cards[0].querySelector('.kpi-value').textContent = fmtTok(tok);
   cards[0].querySelector('.kpi-sub').textContent = tok > 0 ? '免费变体占 '+(freeTok/tok*100).toFixed(1)+'%' : '';
@@ -295,35 +309,44 @@ function renderKPI() {
   cards[1].querySelector('.kpi-sub').textContent = '≈ '+fmtReq(req/86400)+' 次/秒';
   cards[2].classList.remove('skeleton'); cards[2].querySelector('.kpi-value').textContent = bases.size;
   cards[2].querySelector('.kpi-sub').textContent = '24h 内有调用的模型';
-  cards[3].classList.remove('skeleton'); cards[3].querySelector('.kpi-value').textContent = nameOf(top.model_permaslug);
-  cards[3].querySelector('.kpi-sub').textContent = authorName(authorOf(top.model_permaslug))+' · '+fmtTok(top.total_prompt_tokens+top.total_completion_tokens);
+  cards[3].classList.remove('skeleton'); cards[3].querySelector('.kpi-value').textContent = nameOf(top.slug);
+  cards[3].querySelector('.kpi-sub').textContent = authorName(authorOf(top.slug))+' · '+fmtTok(top.tok);
 }
 
 /* ---------- 用量总榜 ---------- */
 function renderUsage() {
   const c = chart('chart-usage'); if (!c || !D.usage.length) return;
   const byTok = r => r.total_prompt_tokens + r.total_completion_tokens;
-  const rows = [...D.usage].sort((a, b) => (usageMetric === 'tokens' ? byTok(b)-byTok(a) : (b.count||0)-(a.count||0))).slice(0, 12);
+  const agg = aggregateUsage();
   const total = D.usage.reduce((s, r) => s + byTok(r), 0);
-  const names = rows.map(r => nameOf(r.model_permaslug) + (r.variant === 'free' ? ' ·免费' : r.variant === 'batch' ? ' ·batch' : ''));
-  const vals  = rows.map(r => usageMetric === 'tokens' ? byTok(r) : (r.count||0));
+  const metric = r => usageMetric === 'tokens' ? r.tok : r.req;
+  const rows = agg.sort((a, b) => metric(b)-metric(a)).slice(0, 12);
+  const names = rows.map(r => nameOf(r.slug));
+  const vals  = rows.map(r => metric(r));
   const fmtr  = usageMetric === 'tokens' ? fmtTok : fmtReq;
   c.setOption({
     tooltip: Object.assign({ trigger:'axis', axisPointer:{type:'shadow'}, formatter(ps) {
       const r = rows[ps[0].dataIndex];
-      return `<b>${esc(nameOf(r.model_permaslug))}</b>${r.variant !== 'standard' ? ' <span style="color:#7a9a8e">'+r.variant+'</span>' : ''}<br>` +
-        `${esc(r.model_permaslug)}<br>Token：${fmtTok(byTok(r))}（占全平台 ${(byTok(r)/total*100).toFixed(1)}%）<br>请求：${fmtReq(r.count||0)} 次<br>厂商：${esc(authorName(authorOf(r.model_permaslug)))}`;
+      const mix = r.tok > 0
+        ? [r.tok-r.freeTok-r.batchTok > 0 ? '标准 '+(100*(1-(r.freeTok+r.batchTok)/r.tok)).toFixed(0)+'%' : '',
+           r.freeTok > 0 ? 'free '+(r.freeTok/r.tok*100).toFixed(0)+'%' : '',
+           r.batchTok > 0 ? 'batch '+(r.batchTok/r.tok*100).toFixed(0)+'%' : ''].filter(Boolean).join(' · ')
+        : '';
+      return `<b>${esc(nameOf(r.slug))}</b><br>` +
+        `${esc(r.slug)}<br>Token：${fmtTok(r.tok)}（占全平台 ${(r.tok/total*100).toFixed(1)}%）<br>请求：${fmtReq(r.req)} 次` +
+        (mix ? `<br><span style="color:#7a9a8e">变体构成：${mix}</span>` : '') +
+        `<br>厂商：${esc(authorName(authorOf(r.slug)))}`;
     } }, TIP),
     grid: { left:8, right: isNarrow()?54:90, top:10, bottom:10, containLabel:true },
     xAxis: Object.assign(AXIS_C(true), { type:'value', axisLabel:{ color:'#a89f8a', fontSize:11, formatter:fmtr } }),
-    yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:names, axisLabel:{ color:'#ddd6c4', fontSize:12, formatter(v, i) { return rows[i].variant === 'free' ? '{fr|'+v+'}' : v; }, rich:{ fr:{ color:'#7a9a8e', fontWeight:600, fontSize:12, width: isNarrow()?104:170, overflow:'truncate' } }, width: isNarrow()?104:170, overflow:'truncate' } }),
+    yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:names, axisLabel:{ color:'#ddd6c4', fontSize:12, width: isNarrow()?104:170, overflow:'truncate' } }),
     series: [{
       type:'bar', data:vals, barWidth:'56%',
       label: { show:true, position:'right', color:'#a89f8a', fontSize:11, formatter: p => fmtr(p.value) },
-      itemStyle: { borderRadius:[0, 2, 2, 0], color: p => authorColor(authorOf(rows[p.dataIndex].model_permaslug)) },
+      itemStyle: { borderRadius:[0, 2, 2, 0], color: p => authorColor(authorOf(rows[p.dataIndex].slug)) },
     }],
   }, { notMerge:true });
-  c.off('click'); c.on('click', p => { if (p.componentType === 'series') openCardSlug(rows[p.dataIndex].model_permaslug, c.getDom()); });
+  c.off('click'); c.on('click', p => { if (p.componentType === 'series') openCardSlug(rows[p.dataIndex].slug, c.getDom()); });
 }
 
 /* ---------- 分项王者 ---------- */
@@ -635,10 +658,9 @@ function renderNewModels() {
 /* ---------- 汇总渲染 ---------- */
 /* 图表动态摘要：canvas 内容读屏器无法朗读，渲染后把榜首写成一句 aria-label */
 function updateChartA11y() {
-  const byTok = r => r.total_prompt_tokens + r.total_completion_tokens;
   if (D.usage.length) {
-    const top = [...D.usage].sort((a, b) => byTok(b)-byTok(a))[0];
-    $('#chart-usage').setAttribute('aria-label', `用量总榜条形图：24 小时 Top 12，当前第一 ${nameOf(top.model_permaslug)}，${fmtTok(byTok(top))} Token`);
+    const top = aggregateUsage().sort((a, b) => b.tok-a.tok)[0];
+    $('#chart-usage').setAttribute('aria-label', `用量总榜条形图：24 小时 Top 12，当前第一 ${nameOf(top.slug)}，${fmtTok(top.tok)} Token`);
   }
   if (D.disc && Array.isArray(D.disc.authors) && D.disc.authors.length) {
     const top = [...D.disc.authors].sort((a, b) => b.weeklyTokens-a.weeklyTokens)[0];
@@ -715,7 +737,7 @@ if (typeof window !== 'undefined') window.__render = () => { prepareBench(); ren
 if (typeof window !== 'undefined') window.MB = {
   D, nameOf, authorName, authorOf, authorColor, baseSlug, esc,
   fmtTok, fmtReq, fmtUsd, bjTime, modelFacts, CATS, PAL, chart, isNarrow,
-  openCardSlug, subscribers: [],
+  aggregateUsage, openCardSlug, subscribers: [],
 };
 /* HTML 里的模型名统一点击 → 详情弹层（king 卡 / 维度之最 / 黑马 / 新模型） */
 document.addEventListener('click', e => {
