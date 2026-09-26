@@ -10,6 +10,14 @@ const CN_NUM = ['壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖', '
 const DA_LABEL = { 'models-website': '网页开发', 'models-uicomponent': 'UI 组件', 'models-dataviz': '数据可视化',
   'models-gamedev': '游戏开发', 'models-svg': 'SVG', 'models-3d': '3D', 'agents-agenticslides(html)': '幻灯片' };
 let lastFacts = null;
+let lastFocus = null;   // 打开弹层前的焦点元素：关闭时还原，避免 focus 把页面滚回顶部
+let lastScroll = 0;     // 打开前的滚动位置，开启期间每帧钉住（focus 的 scroll-into-view 动画在部分环境绕不过 preventScroll）
+let pinRaf = 0;
+function pinScroll() {
+  if ($('#modal').hidden) return;
+  if (Math.abs(window.scrollY - lastScroll) > 2) window.scrollTo({ top: lastScroll, behavior: 'instant' });
+  pinRaf = requestAnimationFrame(pinScroll);
+}
 
 /* ---------------- 详情弹层 ---------------- */
 function stat(label, val, cls) {
@@ -38,11 +46,22 @@ function openCard(slug) {
     (f.fastProv ? stat('最快线路', esc(f.fastProv) + ' ' + fmtUsd(f.fastPrice || 0) + '/M') : '') +
     '</div>' + (daRows ? `<div class="m-grid m-da">${daRows}</div>` : '');
   $('#modal').hidden = false;
-  $('#modal-close').focus();
+  lastFocus = document.activeElement;
+  lastScroll = window.scrollY;
+  document.documentElement.style.overflow = 'hidden';   // 锁背景滚动
+  try { $('#modal-close').focus({ preventScroll: true }); } catch { $('#modal-close').focus(); }
+  cancelAnimationFrame(pinRaf); pinRaf = requestAnimationFrame(pinScroll);
 }
 function closeCard() {
   $('#modal').hidden = true;
-  $('#btn-refresh').focus();
+  document.documentElement.style.overflow = '';
+  cancelAnimationFrame(pinRaf);
+  if (lastFocus && lastFocus.focus) {
+    try { lastFocus.focus({ preventScroll: true }); } catch { lastFocus.focus(); }
+  }
+  requestAnimationFrame(() => {
+    if (Math.abs(window.scrollY - lastScroll) > 5) window.scrollTo({ top: lastScroll, behavior: 'instant' });
+  });
 }
 $('#modal-close').addEventListener('click', closeCard);
 $('#modal-mask').addEventListener('click', closeCard);
@@ -117,10 +136,6 @@ async function stamp(mode, f) {
     });
     const meta = [f.req24h ? '24h 请求 ' + fmtReq(f.req24h) : '', f.ctx ? '上下文 ' + (f.ctx >= 1e6 ? (f.ctx/1e6).toFixed(1).replace(/\.0$/, '') + 'M' : Math.round(f.ctx/1000) + 'K') : '', f.tps ? Math.round(f.tps) + ' tok/s' : ''].filter(Boolean).join(' · ');
     if (meta) { c.fillStyle = '#a89f8a'; c.font = '22px "PingFang SC", "Microsoft YaHei", sans-serif'; c.fillText(meta, W/2, 900); }
-    c.fillStyle = '#7a7260'; c.font = '26px KaiTi, serif';
-    c.fillText('榜如水墨，浓淡随时', W/2, 1000);
-    c.fillStyle = '#7a7260'; c.font = '20px sans-serif';
-    c.fillText('数据 · openrouter.ai 24h 真实用量 · AA 评分', W/2, H - 120);
   } else {
     const rows = [...D.usage].sort((a, b) =>
       (b.total_prompt_tokens+b.total_completion_tokens)-(a.total_prompt_tokens+a.total_completion_tokens)).slice(0, 5);
@@ -140,8 +155,12 @@ async function stamp(mode, f) {
       c.textAlign = 'left';
     });
     c.fillStyle = '#7a7260'; c.font = '22px sans-serif'; c.textAlign = 'center';
-    c.fillText('openrouter.ai 24h 真实用量 · 墨榜出品', W/2, H - 120);
   }
+  /* 两类卡统一的题款与落款 */
+  c.fillStyle = '#7a7260'; c.font = '26px KaiTi, serif'; c.textAlign = 'center';
+  c.fillText('榜如水墨，浓淡随时', W/2, H - 210);
+  c.fillStyle = '#7a7260'; c.font = '20px sans-serif';
+  c.fillText('数据 · openrouter.ai 24h 真实用量' + (mode === 'single' ? ' · AA 评分' : '') + ' · 墨榜出品', W/2, H - 120);
   inkSeal(c, W/2 - 34, H - 100, 68, '榜');
   cv.toBlob(b => {
     const a = document.createElement('a');

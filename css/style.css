@@ -270,8 +270,8 @@ h2 {
 .duel-tok { font-size: 12px; color: var(--txt3); width: 70px; text-align: right; flex: none; font-variant-numeric: tabular-nums; }
 
 /* ---------- 模型详情弹层 ---------- */
-#modal { position: fixed; inset: 0; z-index: 200; }
-.modal-mask { position: absolute; inset: 0; background: rgba(15, 13, 10, .72); backdrop-filter: blur(4px); }
+#modal { position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 200; }
+.modal-mask { position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: rgba(15, 13, 10, .72); backdrop-filter: blur(4px); }
 .modal-card {
   position: relative; max-width: 620px; margin: 7vh auto; max-height: 86vh; overflow: auto;
   background: var(--card); border: 1px solid var(--line2); border-radius: var(--radius);
@@ -296,4 +296,33 @@ h2 {
   .duel-grid { grid-template-columns: 1fr; }
   .m-grid { grid-template-columns: repeat(2, 1fr); }
   .duel-name { width: 110px; }
+}
+
+/* ---------- 手机端（≤640px）：图表增高、弹层贴边、留白收紧 ---------- */
+@media (max-width: 640px) {
+  .wrap { padding: 0 14px; }
+  main > .card, .grid2 .card { padding: 18px 14px 12px; margin-bottom: 20px; }
+  .card-head { margin-bottom: 12px; }
+  .h-sub { margin-left: 8px; letter-spacing: 1px; }
+  .topbar-in { padding: 8px 14px; }
+  .chart { height: 300px; }
+  .chart.tall { height: 460px; }
+  .kpis { grid-template-columns: repeat(2, 1fr); gap: 10px; padding-bottom: 18px; }
+  .kpi { padding: 12px 12px 10px; }
+  .kpi-value { font-size: 20px; }
+  .brush { font-size: 42px; letter-spacing: 6px; }
+  .sun { width: 46px; height: 46px; right: 6%; bottom: 150px; }
+  .t-table { font-size: 12px; }
+  .t-table th, .t-table td { padding: 6px 6px; }
+  .vs-box input { min-width: 120px; padding: 8px 8px; }
+  .calc-box input { width: 88px; }
+  .duel-name { width: 92px; font-size: 12px; }
+  .duel-tok { width: 62px; }
+  .modal-card { margin: 3vh 10px; max-height: 94vh; padding: 20px 16px 14px; }
+  .m-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .m-name { font-size: 20px; }
+  .modal-acts { flex-wrap: wrap; }
+  .tabs { gap: 6px; }
+  .tab { padding: 5px 10px; font-size: 12px; }
+  .foot { font-size: 12px; }
 }

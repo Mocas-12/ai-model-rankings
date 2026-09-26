@@ -50,6 +50,7 @@ const fmtTok  = n => n >= 1e12 ? (n/1e12).toFixed(2)+' 万亿' : n >= 1e8 ? (n/1
 const fmtReq  = n => n >= 1e8 ? (n/1e8).toFixed(2)+'亿' : n >= 1e4 ? (n/1e4).toFixed(1)+'万' : String(Math.round(n));
 const fmtUsd  = n => n >= 1 ? '$'+n.toFixed(2) : '$'+n.toFixed(4);
 const bjTime  = () => new Date().toLocaleString('zh-CN', { timeZone:'Asia/Shanghai', hour12:false });
+const isNarrow = () => window.matchMedia('(max-width: 640px)').matches;   // 手机端图表参数收窄
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 /* ---------------- 名称/ slug 解析 ---------------- */
@@ -313,9 +314,9 @@ function renderUsage() {
       return `<b>${esc(nameOf(r.model_permaslug))}</b>${r.variant !== 'standard' ? ' <span style="color:#7a9a8e">'+r.variant+'</span>' : ''}<br>` +
         `${esc(r.model_permaslug)}<br>Token：${fmtTok(byTok(r))}（占全平台 ${(byTok(r)/total*100).toFixed(1)}%）<br>请求：${fmtReq(r.count||0)} 次<br>厂商：${esc(authorName(authorOf(r.model_permaslug)))}`;
     } }, TIP),
-    grid: { left:8, right:90, top:10, bottom:10, containLabel:true },
+    grid: { left:8, right: isNarrow()?54:90, top:10, bottom:10, containLabel:true },
     xAxis: Object.assign(AXIS_C(true), { type:'value', axisLabel:{ color:'#a89f8a', fontSize:11, formatter:fmtr } }),
-    yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:names, axisLabel:{ color:'#ddd6c4', fontSize:12, formatter(v, i) { return rows[i].variant === 'free' ? '{fr|'+v+'}' : v; }, rich:{ fr:{ color:'#7a9a8e', fontWeight:600, fontSize:12, width:170, overflow:'truncate' } }, width:170, overflow:'truncate' } }),
+    yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:names, axisLabel:{ color:'#ddd6c4', fontSize:12, formatter(v, i) { return rows[i].variant === 'free' ? '{fr|'+v+'}' : v; }, rich:{ fr:{ color:'#7a9a8e', fontWeight:600, fontSize:12, width: isNarrow()?104:170, overflow:'truncate' } }, width: isNarrow()?104:170, overflow:'truncate' } }),
     series: [{
       type:'bar', data:vals, barWidth:'56%',
       label: { show:true, position:'right', color:'#a89f8a', fontSize:11, formatter: p => fmtr(p.value) },
@@ -422,7 +423,7 @@ function renderValue() {
       const v = p.value;
       return `<b>${esc(nameOf(p.name))}</b><br>单请求成本：${fmtUsd(v[0])}<br>智能指数：${v[1].toFixed(1)}<br>24h Token：${fmtTok(v[2])}`;
     } }, TIP),
-    grid: { left:10, right:110, top:30, bottom:10, containLabel:true },
+    grid: { left:10, right: isNarrow()?56:110, top:30, bottom:10, containLabel:true },
     legend: { show:false },
     xAxis: Object.assign(AXIS_C(true), { type:'log', min: v => v.min/2, max: v => v.max*2, axisLabel:{ color:'#a89f8a', fontSize:10.5, formatter:v => '$'+v } }),
     yAxis: Object.assign(AXIS_C(true), { type:'value', min:'dataMin', max:'dataMax', axisLabel:{ color:'#a89f8a', fontSize:10.5 } }),
@@ -452,7 +453,7 @@ function renderSpeed() {
       const r = rows[p.dataIndex];
       return `<b>${esc(nameOf(r.slug))}</b><br>P50 延迟：${(r.p50_latency/1000).toFixed(2)} s<br>P50 吞吐：${Math.round(r.p50_throughput)} tok/s<br>请求数：${fmtReq(r.request_count||0)}<br>最快线路：${esc(r.best_latency_provider || '--')}（${fmtUsd(r.best_latency_price||0)}/M）`;
     } }, TIP),
-    grid: { left:10, right:90, top:30, bottom:10, containLabel:true },
+    grid: { left:10, right: isNarrow()?56:90, top:30, bottom:10, containLabel:true },
     xAxis: Object.assign(AXIS_C(true), { type:'log', axisLabel:{ color:'#a89f8a', fontSize:10.5, formatter:v => v >= 1000 ? (v/1000)+'s' : v } }),
     yAxis: Object.assign(AXIS_C(true), { type:'value', axisLabel:{ color:'#a89f8a', fontSize:10.5 } }),
     series: [{
@@ -500,15 +501,18 @@ function renderTrend() {
 function renderVendors() {
   const c = chart('chart-vendors'); if (!c || !D.disc || !Array.isArray(D.disc.authors)) return;
   const rows = [...D.disc.authors].sort((a, b) => b.weeklyTokens-a.weeklyTokens).slice(0, 10);
+  const nar = isNarrow();
   c.setOption({
     tooltip: Object.assign({ trigger:'item', formatter(p) {
       const r = rows[p.dataIndex];
       const g = r.changePercent != null ? (r.changePercent >= 0 ? '<span style="color:#e0654f">+'+(r.changePercent*100).toFixed(1)+'%</span>' : '<span style="color:#8d8677">'+(r.changePercent*100).toFixed(1)+'%</span>') : '';
       return `<b>${esc(authorName(r.author))}</b><br>周 Token：${fmtTok(r.weeklyTokens)}<br>份额：${(r.share*100).toFixed(1)}% ${g ? '· 环比 '+g : ''}`;
     } }, TIP),
-    legend: { orient:'vertical', right:0, top:'middle', textStyle:{ color:'#b5ad99', fontSize:11 }, itemWidth:10, itemHeight:10 },
+    legend: nar
+      ? { orient:'horizontal', bottom:0, left:'center', textStyle:{ color:'#b5ad99', fontSize:10 }, itemWidth:10, itemHeight:10 }
+      : { orient:'vertical', right:0, top:'middle', textStyle:{ color:'#b5ad99', fontSize:11 }, itemWidth:10, itemHeight:10 },
     series: [{
-      type:'pie', center:['32%', '52%'], radius:['48%', '72%'],
+      type:'pie', center: nar ? ['50%', '38%'] : ['32%', '52%'], radius: nar ? ['36%', '56%'] : ['48%', '72%'],
       data: rows.map(r => ({ name:authorName(r.author), value:r.weeklyTokens, itemStyle:{ color:authorColor(r.author) } })),
       label: { show:true, position:'center', formatter:'厂商\n格局', fontSize:14, color:'#a89f8a', lineHeight:20 },
       itemStyle: { borderColor:'#1d1a15', borderWidth:2, borderRadius:4 },
@@ -522,11 +526,14 @@ const TASK_CN = { code:'代码', data:'数据', agent:'智能体', general:'通�
 function renderSpendTask() {
   const c = chart('chart-spend'); if (!c || !D.spend || !D.spend.spend) return;
   const rows = D.spend.spend.macroCategories || [];
+  const nar = isNarrow();
   c.setOption({
     tooltip: Object.assign({ trigger:'item', formatter:p => `<b>${esc(p.name)}</b><br>占 30 天花费 ${p.value}%` }, TIP),
-    legend: { orient:'vertical', right:0, top:'middle', textStyle:{ color:'#b5ad99', fontSize:11 }, itemWidth:10, itemHeight:10 },
+    legend: nar
+      ? { orient:'horizontal', bottom:0, left:'center', textStyle:{ color:'#b5ad99', fontSize:10 }, itemWidth:10, itemHeight:10 }
+      : { orient:'vertical', right:0, top:'middle', textStyle:{ color:'#b5ad99', fontSize:11 }, itemWidth:10, itemHeight:10 },
     series: [{
-      type:'pie', center:['32%', '52%'], radius:['48%', '72%'],
+      type:'pie', center: nar ? ['50%', '38%'] : ['32%', '52%'], radius: nar ? ['36%', '56%'] : ['48%', '72%'],
       data: rows.map((r, i) => ({ name:TASK_CN[r.key] || r.label || r.key, value:+(r.spendShare*100).toFixed(1), itemStyle:{ color:PAL[(i+1)%PAL.length] } })),
       label: { show:true, position:'center', formatter:'30 天\n任务花费', fontSize:14, color:'#a89f8a', lineHeight:20 },
       itemStyle: { borderColor:'#1d1a15', borderWidth:2, borderRadius:4 },
@@ -566,9 +573,9 @@ function renderCat() {
       const r = rows[ps[0].dataIndex];
       return `<b>${esc(nameOf(r[0]))}</b><br>${def.unit ? '时长' : 'Token'}：${fmtr(r[1])}<br>占${esc(def.label)}类：${(r[1]/total*100).toFixed(1)}%`;
     } }, TIP),
-    grid: { left:8, right:90, top:10, bottom:10, containLabel:true },
+    grid: { left:8, right: isNarrow()?54:90, top:10, bottom:10, containLabel:true },
     xAxis: Object.assign(AXIS_C(true), { type:'value', axisLabel:{ color:'#a89f8a', fontSize:11, formatter:fmtr } }),
-    yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:rows.map(r => nameOf(r[0])), axisLabel:{ color:'#ddd6c4', fontSize:12.5, width:170, overflow:'truncate' } }),
+    yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:rows.map(r => nameOf(r[0])), axisLabel:{ color:'#ddd6c4', fontSize:12.5, width: isNarrow()?104:170, overflow:'truncate' } }),
     series: [{
       type:'bar', data:rows.map(r => r[1]), barWidth:'56%',
       label: { show:true, position:'right', color:'#a89f8a', fontSize:11, formatter:p => fmtr(p.value) },
@@ -707,7 +714,7 @@ if (typeof window !== 'undefined') window.__render = () => { prepareBench(); ren
 /* 公共 API：js/tools.js、js/card.js 按序消费（零构建的多文件拆分，无打包器） */
 if (typeof window !== 'undefined') window.MB = {
   D, nameOf, authorName, authorOf, authorColor, baseSlug, esc,
-  fmtTok, fmtReq, fmtUsd, bjTime, modelFacts, CATS, PAL, chart,
+  fmtTok, fmtReq, fmtUsd, bjTime, modelFacts, CATS, PAL, chart, isNarrow,
   openCardSlug, subscribers: [],
 };
 /* HTML 里的模型名统一点击 → 详情弹层（king 卡 / 维度之最 / 黑马 / 新模型） */

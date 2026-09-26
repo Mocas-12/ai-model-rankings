@@ -3,7 +3,7 @@
  * 工具箱默认折叠，点开 tab 才渲染；MB.subscribers 在每次 renderAll 后触发刷新。 */
 (() => {
 'use strict';
-const { D, esc, fmtTok, fmtReq, fmtUsd, nameOf, authorName, authorOf, authorColor, baseSlug, chart, modelFacts } = window.MB;
+const { D, esc, fmtTok, fmtReq, fmtUsd, nameOf, authorName, authorOf, authorColor, baseSlug, chart, modelFacts, isNarrow } = window.MB;
 const $ = s => document.querySelector(s);
 const CN_AUTHORS = new Set(['deepseek', 'z-ai', 'moonshotai', 'qwen', 'minimax', 'bytedance', 'tencent',
   'baidu', 'xiaomi', 'alibaba', 'inclusionai', 'stepfun', 'thudm', 'kwaivgi', 'nexai']);
@@ -116,9 +116,9 @@ function renderFree() {
         const f = modelFacts(rows[ps[0].dataIndex][0]);
         return `<b>${esc(f.name)}</b><br>free Token：${fmtTok(rows[ps[0].dataIndex][1].tok)}<br>综合智能：${f.aa.intelligence != null ? f.aa.intelligence.toFixed(1) : '--'}`;
       } },
-    grid: { left:8, right:90, top:10, bottom:10, containLabel:true },
+    grid: { left:8, right: isNarrow()?54:90, top:10, bottom:10, containLabel:true },
     xAxis: { type:'value', axisLine:{lineStyle:{color:'#454036'}}, axisTick:{show:false}, axisLabel:{ color:'#a89f8a', fontSize:11, formatter:fmtTok }, splitLine:{lineStyle:{color:'#322d25'}} },
-    yAxis: { type:'category', inverse:true, data:rows.map(r => nameOf(r[0])), axisLine:{lineStyle:{color:'#454036'}}, axisTick:{show:false}, axisLabel:{ color:'#ddd6c4', fontSize:12, width:170, overflow:'truncate' } },
+    yAxis: { type:'category', inverse:true, data:rows.map(r => nameOf(r[0])), axisLine:{lineStyle:{color:'#454036'}}, axisTick:{show:false}, axisLabel:{ color:'#ddd6c4', fontSize:12, width: isNarrow()?104:170, overflow:'truncate' } },
     series: [{ type:'bar', data:rows.map(r => r[1].tok), barWidth:'56%',
       label: { show:true, position:'right', color:'#a89f8a', fontSize:11, formatter:p => fmtTok(p.value) },
       itemStyle: { borderRadius:[0, 2, 2, 0], color:'#7a9a8e' } }],
