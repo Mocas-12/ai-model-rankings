@@ -12,4 +12,6 @@ for js in ("app", "tools", "card"):
 assert "vendor/echarts" not in html, "echarts 未替换为 CDN"
 assert 'integrity="sha384-' in html, "CDN ECharts 缺少 SRI"
 assert html.count("<style>") >= 1, "内联样式缺失"
+assert 'rel="manifest"' not in html, "内联版不应带 manifest（Streamlit iframe 无法安装 PWA）"
+assert 'apple-touch-icon' not in html, "内联版不应带 apple-touch-icon"
 print(f"inline rewrites ok · {len(html)} bytes")

@@ -18,9 +18,20 @@ module.exports = [
         setTimeout: "readonly", setInterval: "readonly",
         clearTimeout: "readonly", clearInterval: "readonly",
         requestAnimationFrame: "readonly", cancelAnimationFrame: "readonly",
-        fetch: "readonly", AbortController: "readonly",
+        fetch: "readonly", AbortController: "readonly", navigator: "readonly",
         location: "readonly", history: "readonly",
         URL: "readonly", URLSearchParams: "readonly",
+      },
+    },
+  },
+  {
+    files: ["sw.js"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "script",
+      globals: {
+        self: "readonly", caches: "readonly", clients: "readonly",
+        fetch: "readonly", URL: "readonly", location: "readonly",
       },
     },
   },

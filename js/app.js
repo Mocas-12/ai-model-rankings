@@ -751,6 +751,10 @@ setInterval(() => {
 $('#foot-time').textContent = bjTime();
 
 fetchAll(false).then(() => lazyCatalog());
+/* PWA：仅独立打开的 https 页面注册（Streamlit iframe 内不注册，manifest 由 build.py 剥除） */
+if (window.parent === window && 'serviceWorker' in navigator && location.protocol === 'https:') {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
 if (typeof window !== 'undefined') window.__render = () => { prepareBench(); renderAll(); };
 /* 公共 API：js/tools.js、js/card.js 按序消费（零构建的多文件拆分，无打包器） */
 if (typeof window !== 'undefined') window.MB = {

@@ -36,4 +36,7 @@ def build_html():
                 f"index.html 结构漂移：规则 {pattern!r} 命中 {n} 次（预期 1 次），"
                 "请同步更新 build.py 的改写规则"
             )
+    # Streamlit iframe 里相对路径资源全部 404：PWA 链接剥除（仅静态版可安装）
+    html = re.sub(r'<link rel="manifest"[^>]*>', '', html)
+    html = re.sub(r'<link rel="apple-touch-icon"[^>]*>', '', html)
     return html
