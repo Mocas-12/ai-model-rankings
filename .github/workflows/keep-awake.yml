@@ -1,0 +1,27 @@
+name: Keep Streamlit apps awake
+
+# Community Cloud 无流量 12h~7d 会休眠，冷启动要等 1 分钟+。
+# 用无头 Chromium 定期真访四个应用（纯 HTTP ping 过不了平台的
+# 游客 auth 握手），发现休眠页自动点唤醒。本仓库每日有 commit，
+# 不会触发 GitHub 对 60 天不活跃定时任务的自动停用。
+on:
+  schedule:
+    - cron: "*/30 * * * *" # UTC，每 30 分钟
+  workflow_dispatch:
+
+concurrency:
+  group: keep-awake
+  cancel-in-progress: false
+
+jobs:
+  keep-awake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/keep-awake.mjs
