@@ -751,10 +751,56 @@ setInterval(() => {
 $('#foot-time').textContent = bjTime();
 
 fetchAll(false).then(() => lazyCatalog());
-/* PWA：仅独立打开的 https 页面注册（Streamlit iframe 内不注册，manifest 由 build.py 剥除） */
-if (window.parent === window && 'serviceWorker' in navigator && location.protocol === 'https:') {
+/* PWA：仅独立打开的安全上下文页面注册（localhost 视为安全；Streamlit iframe 内不注册） */
+const SECURE_CTX = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+if (window.parent === window && 'serviceWorker' in navigator && SECURE_CTX) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
+/* 安装指引：Android/桌面走 beforeinstallprompt 原生弹窗；iOS 手动弹卡片教操作。
+ * 已安装（standalone）或 Streamlit iframe 内不显示；「7 天不再提示」记 localStorage。 */
+(() => {
+  if (window.parent !== window || !SECURE_CTX) return;
+  if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) return;
+  const IS_IOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (IS_IOS && +(localStorage.getItem('mubang-install-hide') || 0) > Date.now()) return;
+  let deferred = null;
+  const btn = document.createElement('button');
+  btn.id = 'btn-install';
+  btn.className = 'btn-refresh';
+  btn.textContent = '⤓ 安装';
+  btn.title = '把墨榜添加到主屏幕 / 桌面';
+  const slot = document.querySelector('.topmeta');
+  if (!slot) return;
+  slot.appendChild(btn);
+  btn.addEventListener('click', () => {
+    if (deferred) { deferred.prompt(); deferred = null; return; }
+    showTip();   // iOS 等无原生弹窗的平台：手动指引
+  });
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferred = e;
+    if (!IS_IOS) btn.textContent = '⤓ 安装';
+  });
+  function showTip() {
+    if ($('#install-tip')) return;
+    const tip = document.createElement('div');
+    tip.id = 'install-tip';
+    tip.innerHTML = `<div class="it-card">
+      <b class="it-title">把墨榜装到主屏幕</b>
+      <ol><li>点浏览器底部工具栏的<b>分享</b>按钮 <span class="it-key">↑</span></li>
+      <li>下滑选「<b>添加到主屏幕</b>」</li>
+      <li>确认后桌面出现水墨图标，点开即全屏运行</li></ol>
+      <div class="it-acts"><label class="it-never"><input type="checkbox" id="it-never"> 7 天不再提示</label>
+      <button id="it-ok" class="btn-refresh">知道了</button></div></div>`;
+    document.body.appendChild(tip);
+    requestAnimationFrame(() => tip.classList.add('show'));
+    $('#it-ok').addEventListener('click', () => {
+      if ($('#it-never').checked) localStorage.setItem('mubang-install-hide', String(Date.now() + 7 * 86400000));
+      tip.classList.remove('show');
+      setTimeout(() => tip.remove(), 350);
+    });
+  }
+})();
 if (typeof window !== 'undefined') window.__render = () => { prepareBench(); renderAll(); };
 /* 公共 API：js/tools.js、js/card.js 按序消费（零构建的多文件拆分，无打包器） */
 if (typeof window !== 'undefined') window.MB = {

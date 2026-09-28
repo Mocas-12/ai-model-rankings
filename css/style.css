@@ -343,3 +343,23 @@ h2 {
   .t-table th { font-size: 10.5px; padding: 5px 6px; }
   .t-table th:nth-child(n+2), .t-table td:nth-child(n+2) { white-space: nowrap; }
 }
+
+/* ---------- 安装指引 ---------- */
+#btn-install { margin-left: 4px; }
+#install-tip {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 300;
+  display: flex; justify-content: center; padding: 12px;
+  opacity: 0; transform: translateY(16px); transition: .3s;
+  pointer-events: none;
+}
+#install-tip.show { opacity: 1; transform: none; pointer-events: auto; }
+.it-card {
+  background: var(--card); border: 1px solid var(--line2); border-radius: var(--radius);
+  box-shadow: 0 14px 48px rgba(0,0,0,.5); padding: 18px 20px 14px; max-width: 420px; width: 100%;
+}
+.it-title { font-family: var(--kai); font-size: 16px; color: var(--txt); letter-spacing: 1px; }
+.it-card ol { margin: 10px 0 12px; padding-left: 22px; color: var(--txt2); font-size: 13px; line-height: 2; }
+.it-card b { color: var(--txt); }
+.it-key { display: inline-block; border: 1px solid var(--line2); border-radius: 2px; padding: 0 5px; font-size: 12px; }
+.it-acts { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.it-never { color: var(--txt3); font-size: 12px; display: flex; align-items: center; gap: 5px; cursor: pointer; }

@@ -19,7 +19,8 @@ module.exports = [
         clearTimeout: "readonly", clearInterval: "readonly",
         requestAnimationFrame: "readonly", cancelAnimationFrame: "readonly",
         fetch: "readonly", AbortController: "readonly", navigator: "readonly",
-        location: "readonly", history: "readonly",
+        location: "readonly", history: "readonly", localStorage: "readonly",
+        matchMedia: "readonly",
         URL: "readonly", URLSearchParams: "readonly",
       },
     },
@@ -31,7 +32,21 @@ module.exports = [
       sourceType: "script",
       globals: {
         self: "readonly", caches: "readonly", clients: "readonly",
-        fetch: "readonly", URL: "readonly", location: "readonly",
+        fetch: "readonly", URL: "readonly", location: "readonly", document: "readonly",
+      },
+    },
+  },
+  {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        console: "readonly", process: "readonly", URL: "readonly",
+        window: "readonly", document: "readonly", navigator: "readonly",
+        setTimeout: "readonly", setInterval: "readonly",
+        clearTimeout: "readonly", clearInterval: "readonly",
+        location: "readonly",
       },
     },
   },
