@@ -754,7 +754,19 @@ fetchAll(false).then(() => lazyCatalog());
 /* PWA：仅独立打开的安全上下文页面注册（localhost 视为安全；Streamlit iframe 内不注册） */
 const SECURE_CTX = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 if (window.parent === window && 'serviceWorker' in navigator && SECURE_CTX) {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    // 新 SW 激活即自动刷新一次，让用户无需手动刷两遍才能看到新版
+    reg.addEventListener('updatefound', () => {
+      const nw = reg.installing;
+      if (!nw) return;
+      nw.addEventListener('statechange', () => {
+        if (nw.state === 'activated' && !sessionStorage.getItem('mubang-sw-reloaded')) {
+          sessionStorage.setItem('mubang-sw-reloaded', '1');
+          location.reload();
+        }
+      });
+    });
+  }).catch(() => {});
 }
 /* 安装指引：Android/桌面走 beforeinstallprompt 原生弹窗；iOS 手动弹卡片教操作。
  * 已安装（standalone）或 Streamlit iframe 内不显示；「7 天不再提示」记 localStorage。 */
