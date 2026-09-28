@@ -150,7 +150,7 @@ async function stamp(mode, f) {
   c.fillText('墨榜', W/2, 190);
   inkSeal(c, W - 118, 90, 62, '战力');
   c.fillStyle = '#a89f8a'; c.font = '24px "PingFang SC", "Microsoft YaHei", sans-serif';
-  c.fillText('AI 大模型实时战力谱 · 北京时间 ' + bjDate(), W/2, 240);
+  c.fillText('AI 大模型实时战力谱 · ' + bjDate(), W/2, 240);
 
   if (mode === 'single' && f) {
     c.fillStyle = authorColor(f.author); c.font = 'bold 52px "PingFang SC", "Microsoft YaHei", sans-serif';

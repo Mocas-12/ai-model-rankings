@@ -48,7 +48,7 @@
 - **🔍 Model card** — click any model on any board for a full-dimension popup; jump straight into compare.
 - **🖨 Ink stamping** — one-click canvas share cards (Top-5 board or single model) in the site's ink-wash style.
 - **🎨 Ink-wash dark UI** — Ma Shan Zheng calligraphy, seal stamps, layered mountains; every vendor rendered in its **real brand color** (Claude orange, GLM blue, OpenAI green…).
-- **🔄 Auto-refresh** every 5 minutes, Beijing-time timestamps.
+- **🔄 Auto-refresh** every 5 minutes, timestamps in the visitor's local timezone.
 
 🧠 How It Works
 ---

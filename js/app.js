@@ -49,7 +49,7 @@ const AXIS_C = line => ({ axisLine:{lineStyle:{color:'#454036'}}, axisTick:{show
 const fmtTok  = n => n >= 1e12 ? (n/1e12).toFixed(2)+' 万亿' : n >= 1e8 ? (n/1e8).toFixed(1)+' 亿' : n >= 1e4 ? (n/1e4).toFixed(1)+' 万' : String(Math.round(n));
 const fmtReq  = n => n >= 1e8 ? (n/1e8).toFixed(2)+'亿' : n >= 1e4 ? (n/1e4).toFixed(1)+'万' : String(Math.round(n));
 const fmtUsd  = n => n >= 1 ? '$'+n.toFixed(2) : '$'+n.toFixed(4);
-const bjTime  = () => new Date().toLocaleString('zh-CN', { timeZone:'Asia/Shanghai', hour12:false });
+const bjTime  = () => new Date().toLocaleString('zh-CN', { hour12:false });   // 访客本地时区
 const isNarrow = () => window.matchMedia('(max-width: 640px)').matches;   // 手机端图表参数收窄
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
@@ -609,7 +609,7 @@ function renderCat() {
   const total = Object.values(last.ys || {}).reduce((s, v) => s+v, 0);
   const rows = Object.entries(last.ys || {}).filter(([s]) => s !== 'Others').sort((a, b) => b[1]-a[1]).slice(0, 8);
   const fmtr = def.unit ? (v => v.toFixed(0)+' '+def.unit) : fmtTok;
-  $('#cat-sub').textContent = `${def.label} · ${last.x}（北京时间）· 当日总量 ${fmtr(total)}`;
+  $('#cat-sub').textContent = `${def.label} · ${last.x} · 当日总量 ${fmtr(total)}`;
   c.setOption({
     tooltip: Object.assign({ trigger:'axis', axisPointer:{type:'shadow'}, formatter(ps) {
       const r = rows[ps[0].dataIndex];
