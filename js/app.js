@@ -347,8 +347,8 @@ function renderUsage() {
         `<br>厂商：${esc(authorName(authorOf(r.slug)))}`;
     } }, TIP),
     grid: { left:8, right: isNarrow()?54:90, top:10, bottom:10, containLabel:true },
-    xAxis: Object.assign(AXIS_C(true), { type:'value', axisLabel:{ color:'#a89f8a', fontSize:11, formatter:fmtr } }),
-    yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:names, axisLabel:{ color:'#ddd6c4', fontSize:12, width: isNarrow()?104:170, overflow:'truncate' } }),
+    xAxis: Object.assign(AXIS_C(true), { type:'value', splitNumber: isNarrow()?3:null, axisLabel:{ color:'#a89f8a', fontSize:isNarrow()?10:11, hideOverlap:true, formatter:fmtr } }),
+    yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:names, axisLabel:{ color:'#ddd6c4', fontSize:12, width: isNarrow()?126:170, overflow:'break', lineHeight:15 } }),
     series: [{
       type:'bar', data:vals, barWidth:'56%',
       label: { show:true, position:'right', color:'#a89f8a', fontSize:11, formatter: p => fmtr(p.value) },
@@ -616,8 +616,8 @@ function renderCat() {
       return `<b>${esc(nameOf(r[0]))}</b><br>${def.unit ? '时长' : 'Token'}：${fmtr(r[1])}<br>占${esc(def.label)}类：${(r[1]/total*100).toFixed(1)}%`;
     } }, TIP),
     grid: { left:8, right: isNarrow()?54:90, top:10, bottom:10, containLabel:true },
-    xAxis: Object.assign(AXIS_C(true), { type:'value', axisLabel:{ color:'#a89f8a', fontSize:11, formatter:fmtr } }),
-    yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:rows.map(r => nameOf(r[0])), axisLabel:{ color:'#ddd6c4', fontSize:12.5, width: isNarrow()?104:170, overflow:'truncate' } }),
+    xAxis: Object.assign(AXIS_C(true), { type:'value', splitNumber: isNarrow()?3:null, axisLabel:{ color:'#a89f8a', fontSize:isNarrow()?10:11, hideOverlap:true, formatter:fmtr } }),
+    yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:rows.map(r => nameOf(r[0])), axisLabel:{ color:'#ddd6c4', fontSize:12.5, width: isNarrow()?126:170, overflow:'break', lineHeight:16 } }),
     series: [{
       type:'bar', data:rows.map(r => r[1]), barWidth:'56%',
       label: { show:true, position:'right', color:'#a89f8a', fontSize:11, formatter:p => fmtr(p.value) },
@@ -820,6 +820,13 @@ if (typeof window !== 'undefined') window.MB = {
   fmtTok, fmtReq, fmtUsd, bjTime, modelFacts, CATS, PAL, chart, isNarrow,
   aggregateUsage, openCardSlug, subscribers: [],
 };
+/* 弹层打开前清掉所有图表 tooltip：触摸设备上 tooltip 会残留并盖住弹层遮罩 */
+function hideAllTips() {
+  Object.values(chartInstances).forEach(c => {
+    try { c.dispatchAction({ type: 'hideTip' }); } catch {}
+  });
+}
+if (typeof window !== 'undefined') window.MB.hideAllTips = hideAllTips;
 /* HTML 里的模型名统一点击 → 详情弹层（king 卡 / 维度之最 / 黑马 / 新模型） */
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-slug]');

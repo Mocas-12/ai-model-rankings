@@ -120,7 +120,7 @@ h2 {
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .grid2 .card { margin-bottom: 28px; }
 
-.chart { width: 100%; height: 380px; }
+.chart { width: 100%; height: 380px; position: relative; z-index: 1; }   /* 局部层叠上下文：困住 tooltip，不得盖过弹层 */
 .chart.tall { height: 430px; }
 .chart.sq { height: 330px; }
 .ph { color: var(--txt3); font-size: 13px; padding: 40px 0; text-align: center; font-family: var(--kai); }
@@ -323,7 +323,7 @@ h2 {
   .t-table th, .t-table td { padding: 6px 6px; }
   .vs-box input { min-width: 120px; padding: 8px 8px; }
   .calc-box input { width: 88px; }
-  .duel-name { width: 92px; font-size: 12px; }
+  .duel-name { width: 104px; font-size: 12px; white-space: normal; word-break: break-word; line-height: 1.4; }
   .duel-tok { width: 62px; }
   .modal-card { margin: 3vh 10px; max-height: 94vh; padding: 20px 16px 14px; }
   .m-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
