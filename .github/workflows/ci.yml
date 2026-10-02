@@ -8,6 +8,10 @@ on:
     - cron: '0 3 * * 1'   # 每周一 03:00 UTC：线上接口 shape 冒烟
     - cron: '0 5 * * *'   # 每日 05:00 UTC：成本快照（降价榜数据源）
 
+# 默认最小权限；snapshot job 单独声明 contents: write 覆盖
+permissions:
+  contents: read
+
 jobs:
   smoke:
     if: github.event_name != 'schedule'

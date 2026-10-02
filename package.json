@@ -8,8 +8,8 @@
     "test:live": "playwright test --grep @live"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@playwright/test": "^1.49.0",
-    "eslint": "^10.11.0"
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.63.0",
+    "eslint": "10.11.0"
   }
 }

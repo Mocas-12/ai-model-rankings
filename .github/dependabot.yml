@@ -1,0 +1,11 @@
+version: 2
+updates:
+  # devDependencies 已 pin 精确版本，升级一律走 PR（lint + 冒烟把关）
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

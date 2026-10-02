@@ -9,6 +9,9 @@ on:
     - cron: "*/30 * * * *" # UTC，每 30 分钟
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: keep-awake
   cancel-in-progress: false
