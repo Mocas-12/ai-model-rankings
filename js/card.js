@@ -35,6 +35,7 @@ function stat(label, val, cls) {
   return `<div class="m-stat${cls ? ' ' + cls : ''}"><small>${label}</small><b>${val}</b></div>`;
 }
 function openCard(slug, anchorEl) {
+  window.MB.hideAllTips();   // 触摸端 tooltip 残留会盖住弹层遮罩；99bb76b 的双保险此前只落了定义没接线
   const f = modelFacts(slug);
   lastFacts = f;
   const ctx = f.ctx ? (f.ctx >= 1e6 ? (f.ctx/1e6).toFixed(1).replace(/\.0$/, '') + 'M' : Math.round(f.ctx/1000) + 'K') : '--';
