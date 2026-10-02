@@ -817,7 +817,7 @@ if (typeof window !== 'undefined') window.__render = () => { prepareBench(); ren
 /* 公共 API：js/tools.js、js/card.js 按序消费（零构建的多文件拆分，无打包器） */
 if (typeof window !== 'undefined') window.MB = {
   D, nameOf, authorName, authorOf, authorColor, baseSlug, esc,
-  fmtTok, fmtReq, fmtUsd, bjTime, modelFacts, CATS, PAL, chart, isNarrow,
+  fmtTok, fmtReq, fmtUsd, bjTime, modelFacts, chart, isNarrow,
   aggregateUsage, openCardSlug, subscribers: [],
 };
 /* 弹层打开前清掉所有图表 tooltip：触摸设备上 tooltip 会残留并盖住弹层遮罩 */
