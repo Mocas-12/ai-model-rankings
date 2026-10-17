@@ -53,8 +53,8 @@ a:hover { text-decoration: underline; }
   border-bottom: 1px solid var(--line);
 }
 .topbar-in { display: flex; align-items: center; gap: 20px; padding: 12px 24px; }
-.brand { flex: none; color: var(--txt); font-size: 23px; letter-spacing: 3px; }
-.brand:hover { color: var(--red-bright); text-decoration: none; }
+.overview-link { flex: none; color: var(--txt2); font-size: 13px; }
+.overview-link:hover { color: var(--txt); }
 .section-nav { display: flex; align-items: center; gap: 18px; flex: 1; min-width: 0; overflow-x: auto; }
 .section-nav a { flex: none; color: var(--txt2); font-size: 13px; padding: 8px 0; white-space: nowrap; }
 .section-nav a:hover, .section-nav a:focus-visible { color: var(--txt); }
