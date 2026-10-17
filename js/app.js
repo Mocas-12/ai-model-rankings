@@ -732,6 +732,16 @@ $('#usage-tabs').querySelectorAll('.tab').forEach(btn => btn.addEventListener('c
 }));
 $('#btn-refresh').addEventListener('click', () => { countdown = REFRESH_SEC; fetchAll(true); });
 
+document.addEventListener('click', e => {
+  const link = e.target.closest('.topbar a[href^="#"], .skip-link');
+  if (!link || window.parent === window) return;
+  const target = document.getElementById(link.getAttribute('href').slice(1));
+  if (!target) return;
+  // srcdoc 的 # 链接会解析成宿主页地址；直接滚动，避免重载内嵌页面。
+  e.preventDefault();
+  target.scrollIntoView({ block:'start' });
+});
+
 $('#model-search').addEventListener('submit', e => {
   e.preventDefault();
   const input = $('#model-query');

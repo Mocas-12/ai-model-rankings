@@ -166,6 +166,39 @@ test("内嵌：导航在自适应高度 iframe 中把目标区带入视口", asy
   await expect.poll(toolsBottom).toBeLessThanOrEqual(960);
 });
 
+for (const width of [1440, 390]) {
+  test(`Streamlit srcdoc：${width}px 导航滚动宿主容器且不加载新页面`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 960 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await intercept(page);
+    const html = readFileSync(join(HERE, "..", "index.html"), "utf-8")
+      .replace(/(src|href)="(css|js|vendor)\//g, '$1="/$2/');
+    const srcdoc = html.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+    await page.route("**/~/+/", route => route.fulfill({
+      contentType: "text/html",
+      body: `<!doctype html><html><body style="margin:0;overflow:hidden"><main id="host-scroll" style="height:100vh;overflow:auto"><iframe title="墨榜" srcdoc="${srcdoc}" style="width:100%;height:900px;border:0" sandbox="allow-scripts allow-same-origin"></iframe></main></body></html>`,
+    }));
+    await page.goto("/~/+/");
+    const app = page.frames().find(frame => frame.parentFrame() === page.mainFrame());
+    await app.waitForFunction(() => window.MB && window.MB.D.catalog);
+    await expect.poll(() => page.locator("iframe").evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThan(2500);
+    for (const id of ["sec-usage", "sec-capability", "sec-analysis", "sec-trend", "sec-category", "sec-tools", "overview"]) {
+      await app.locator(`.topbar a[href="#${id}"]`).click();
+      expect(app.url()).toBe("about:srcdoc");
+      const target = app.locator(`#${id}`);
+      const top = () => target.evaluate(el => el.getBoundingClientRect().top + window.frameElement.getBoundingClientRect().top);
+      await expect.poll(top).toBeGreaterThanOrEqual(0);
+      await expect.poll(top).toBeLessThan(750);
+    }
+    await expect(app.locator("#tools-body")).toBeVisible();
+    await app.locator(".skip-link").focus();
+    await app.locator(".skip-link").press("Enter");
+    expect(app.url()).toBe("about:srcdoc");
+    await expect.poll(() => page.locator("#host-scroll").evaluate(el => el.scrollTop)).toBeGreaterThan(100);
+    await expect(app.locator("#chart-usage canvas")).toHaveCount(1);
+  });
+}
+
 for (const width of [1440, 900, 640, 390, 320]) {
   test(`布局：${width}px 无页面横向溢出，导航与图表可用`, async ({ page }) => {
     await page.setViewportSize({ width, height: 960 });
