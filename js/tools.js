@@ -198,7 +198,6 @@ function fillList() {
 /* ---------------- 接线 ---------------- */
 document.querySelector('.section-nav a[href="#sec-tools"]').addEventListener('click', () => {
   openTools(); showTool(activeTool);
-  $('#sec-tools').scrollIntoView({ block:'start' });
 });
 if (location.hash === '#sec-tools') { openTools(); showTool(activeTool); }
 
