@@ -14,22 +14,23 @@ ECHARTS_CDN = (
     'integrity="sha384-pPi0zxBAoDu6+JXW/C68UZLvBUUtU+7zonhif43rqj7pxsGyqyqzcian2Rj37Rss" '
     'crossorigin="anonymous"></script>'
 )
-REWRITES = [
-    (r'<link rel="stylesheet" href="css/style\.css"[^>]*>',
-     "<style>" + (ROOT / "css" / "style.css").read_text(encoding="utf-8") + "</style>"),
-    (r'<script src="js/app\.js"[^>]*></script>',
-     "<script>" + (ROOT / "js" / "app.js").read_text(encoding="utf-8") + "</script>"),
-    (r'<script src="js/tools\.js"[^>]*></script>',
-     "<script>" + (ROOT / "js" / "tools.js").read_text(encoding="utf-8") + "</script>"),
-    (r'<script src="js/card\.js"[^>]*></script>',
-     "<script>" + (ROOT / "js" / "card.js").read_text(encoding="utf-8") + "</script>"),
-    (r'<script src="vendor/echarts\.min\.js"[^>]*></script>', ECHARTS_CDN),
-]
 
 
 def build_html():
+    # Cloud 更新静态文件后可能只重跑入口；每次构建都读取最新资源。
+    rewrites = [
+        (r'<link rel="stylesheet" href="css/style\.css"[^>]*>',
+         "<style>" + (ROOT / "css" / "style.css").read_text(encoding="utf-8") + "</style>"),
+        (r'<script src="js/app\.js"[^>]*></script>',
+         "<script>" + (ROOT / "js" / "app.js").read_text(encoding="utf-8") + "</script>"),
+        (r'<script src="js/tools\.js"[^>]*></script>',
+         "<script>" + (ROOT / "js" / "tools.js").read_text(encoding="utf-8") + "</script>"),
+        (r'<script src="js/card\.js"[^>]*></script>',
+         "<script>" + (ROOT / "js" / "card.js").read_text(encoding="utf-8") + "</script>"),
+        (r'<script src="vendor/echarts\.min\.js"[^>]*></script>', ECHARTS_CDN),
+    ]
     html = (ROOT / "index.html").read_text(encoding="utf-8")
-    for pattern, repl in REWRITES:
+    for pattern, repl in rewrites:
         html, n = re.subn(pattern, lambda _m: repl, html)
         if n != 1:
             raise RuntimeError(
