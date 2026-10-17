@@ -26,6 +26,8 @@ function showTool(key) {
   });
   document.querySelectorAll('.tool-pane').forEach(p => { p.hidden = p.id !== 'tool-' + key; });
   renderTool(key);
+  // 内嵌页先撑高 iframe，再让导航滚动，否则会被父页旧高度截住。
+  if (window.MB.fitFrame) window.MB.fitFrame();
 }
 function renderTool(key) {
   if (!D.usage.length && key !== 'price') return;   // 数据未就绪时等 subscribers 再渲染
@@ -194,6 +196,12 @@ function fillList() {
 }
 
 /* ---------------- 接线 ---------------- */
+document.querySelector('.section-nav a[href="#sec-tools"]').addEventListener('click', () => {
+  openTools(); showTool(activeTool);
+  $('#sec-tools').scrollIntoView({ block:'start' });
+});
+if (location.hash === '#sec-tools') { openTools(); showTool(activeTool); }
+
 $('#tools-toggle').addEventListener('click', () => {
   const body = $('#tools-body');
   const open = body.hidden;
@@ -201,6 +209,7 @@ $('#tools-toggle').addEventListener('click', () => {
   $('#tools-toggle').textContent = open ? '收起 ▴' : '展开 ▾';
   $('#tools-toggle').setAttribute('aria-expanded', String(open));
   if (open) showTool(activeTool);   // 必须走 showTool：解除当前 tab 面板的 hidden，只 renderTool 的话面板仍不可见
+  else if (window.MB.fitFrame) window.MB.fitFrame();
 });
 $('#tool-tabs').addEventListener('click', e => {
   const b = e.target.closest('.tab');

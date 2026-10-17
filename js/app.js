@@ -295,7 +295,7 @@ function chart(id) {
   if (!chartInstances[id]) {
     const el = $('#'+id);
     el.innerHTML = '';
-    chartInstances[id] = echarts.init(el, null, { renderer:'canvas' });
+    chartInstances[id] = echarts.init(el, { animation: !matchMedia('(prefers-reduced-motion: reduce)').matches }, { renderer:'canvas' });
   }
   return chartInstances[id];
 }
@@ -333,6 +333,7 @@ function renderUsage() {
   const names = rows.map(r => nameOf(r.slug));
   const vals  = rows.map(r => metric(r));
   const fmtr  = usageMetric === 'tokens' ? fmtTok : fmtReq;
+  $('#usage-sub').textContent = `24 小时真实${usageMetric === 'tokens' ? ' Token 消耗' : '请求次数'} · Top 12`;
   c.setOption({
     tooltip: Object.assign({ trigger:'axis', axisPointer:{type:'shadow'}, formatter(ps) {
       const r = rows[ps[0].dataIndex];
@@ -360,16 +361,14 @@ function renderUsage() {
 
 /* ---------- 分项王者 ---------- */
 function kingCard(cat, src, model, scoreLine, slug, opts) {
-  const variant = opts && opts.variant;
-  const chip = variant === 'free' ? '<span class="k-chip free">FREE</span>' : variant === 'batch' ? '<span class="k-chip batch">BATCH</span>' : '';
-  return `<div class="king${opts && opts.top1 ? ' top1' : ''}" data-slug="${esc(slug)}">
+  return `<div class="king${opts && opts.top1 ? ' top1' : ''}" data-slug="${esc(slug)}" role="button" tabindex="0" aria-label="查看${esc(model)}的${esc(cat)}评测详情">
     <div class="k-cat">${esc(cat)}<span class="k-src">${esc(src)}</span></div>
-    <div class="k-model">${esc(model)}${chip}</div>
+    <div class="k-model">${esc(model)}</div>
     <div class="k-score">${scoreLine}</div>
   </div>`;
 }
 function renderKings() {
-  const b = D.bench || {}; const aa = b.aaData || {}; const da = b.daData || {};
+  const aa = (D.bench || {}).aaData || {};
   const el = $('#kings'); let html = '';
   const aaMeta = { intelligence:['综合智能', 'AA 智能指数'], coding:['编程', 'AA 编程分'], agentic:['智能体任务', 'AA 智能体分'] };
   ['intelligence','coding','agentic'].forEach(k => {
@@ -378,25 +377,7 @@ function renderKings() {
     const m = list[0];
     html += kingCard(aaMeta[k][0], aaMeta[k][1], nameOf(m.permaslug || m.uid), `分数 <b>${m.score.toFixed(1)}</b><small>/100</small>`, m.permaslug, { top1:k === 'intelligence' });
   });
-  const daMeta = { 'models-website':'网页开发', 'models-uicomponent':'UI 组件', 'models-dataviz':'数据可视化', 'models-gamedev':'游戏开发', 'models-svg':'SVG 绘图', 'models-3d':'3D 建模', 'agents-agenticslides(html)':'演示幻灯片' };
-  Object.keys(daMeta).forEach(k => {
-    const list = [...(da[k] || [])].sort((a, b2) => b2.score-a.score);
-    if (!list.length) return;
-    const m = list[0];
-    html += kingCard(daMeta[k], 'Design Arena', m.display_name || nameOf(m.permaslug), `ELO <b>${Math.round(m.score)}</b><small> · 胜率 ${m.win_rate != null ? m.win_rate.toFixed(1)+'%' : '--'}</small>`, m.permaslug, {});
-  });
-  // 性价比之王：智能指数 top30 里单请求成本最低
-  const aaList = [...(aa.intelligence || [])].sort((a, b2) => b2.score-a.score).slice(0, 30)
-    .map(m => ({ ...m, cost: nameIdx.cost[baseSlug(m.permaslug)] }))
-    .filter(m => m.cost != null).sort((a, b2) => a.cost-b2.cost);
-  if (aaList.length) {
-    const m = aaList[0];
-    html += kingCard('性价比之王', '成本×智能', nameOf(m.permaslug), `<b>${fmtUsd(m.cost)}</b><small>/次 · 智能 ${m.score.toFixed(1)}</small>`, m.permaslug, {});
-  }
-  // 本周黑马
-  const cl = (D.disc && D.disc.climbing || []).filter(x => x.weeklyTokens > 1e11).sort((a, b2) => b2.changePercent-a.changePercent)[0];
-  if (cl) html += kingCard('本周黑马', '周用量涨幅', nameOf(cl.variantPermaslug), `周 Token <b>${fmtTok(cl.weeklyTokens)}</b><small> · ${growTxt(cl.changePercent, cl.weeklyTokens, cl.prevWeeklyTokens)}</small>`, cl.variantPermaslug, { top1:false });
-  if (html) el.innerHTML = html;
+  el.innerHTML = html || '<div class="ph">暂无评测数据</div>';
 }
 
 /* ---------- 维度之最：每个维度只列最强的那个模型 ---------- */
@@ -414,7 +395,7 @@ function renderDimTable() {
     const m = top1(aa[k]);
     if (m) rows.push([label, m.permaslug || m.uid, m.score.toFixed(1)+' / 100', 'Artificial Analysis']);
   });
-  [['models-website','网页开发'], ['models-dataviz','数据可视化'], ['models-gamedev','游戏开发'], ['models-uicomponent','UI 组件']].forEach(([k, label]) => {
+  [['models-website','网页开发'], ['models-dataviz','数据可视化'], ['models-gamedev','游戏开发'], ['models-uicomponent','UI 组件'], ['models-svg','SVG 绘图'], ['models-3d','3D 建模'], ['agents-agenticslides(html)','演示幻灯片']].forEach(([k, label]) => {
     const m = top1(da[k]);
     if (m) rows.push([label, m.permaslug, 'ELO '+Math.round(m.score)+' · 胜率 '+(m.win_rate != null ? m.win_rate.toFixed(0)+'%' : '--'), 'Design Arena']);
   });
@@ -425,7 +406,7 @@ function renderDimTable() {
   const cl = (D.disc && D.disc.climbing || []).filter(x => x.weeklyTokens > 1e11).sort((a, b2) => b2.changePercent-a.changePercent)[0];
   if (cl) rows.push(['周涨幅', cl.variantPermaslug, growTxt(cl.changePercent, cl.weeklyTokens, cl.prevWeeklyTokens)+' · 周 '+fmtTok(cl.weeklyTokens), 'OpenRouter']);
   $('#dimtable').innerHTML = `<table class="dim-t"><thead><tr><th>维度</th><th>最强模型</th><th>数值</th><th class="th-src">数据源</th></tr></thead><tbody>` +
-    rows.map(r => `<tr data-slug="${esc(r[1])}"><td class="td-cat">${esc(r[0])}</td><td class="td-model">${esc(nameOf(r[1]))}<span class="td-author">${esc(authorName(authorOf(r[1])))}</span></td><td class="td-val">${esc(r[2])}</td><td class="td-src">${esc(r[3])}</td></tr>`).join('') +
+    rows.map(r => `<tr data-slug="${esc(r[1])}" tabindex="0" aria-label="查看${esc(nameOf(r[1]))}的${esc(r[0])}详情"><td class="td-cat">${esc(r[0])}</td><td class="td-model">${esc(nameOf(r[1]))}<span class="td-author">${esc(authorName(authorOf(r[1])))}</span></td><td class="td-val">${esc(r[2])}</td><td class="td-src">${esc(r[3])}</td></tr>`).join('') +
     `</tbody></table>`;
 }
 
@@ -675,11 +656,21 @@ function renderNewModels() {
 }
 
 /* ---------- 汇总渲染 ---------- */
+let searchModels = [];
+function renderModelSearch() {
+  const slugs = [...aggregateUsage().sort((a, b) => b.tok-a.tok).map(r => r.slug),
+    ...Object.keys(nameIdx.base2aa), ...Object.keys(nameIdx.base2da),
+    ...Object.keys((D.catalog || {}).bySlug || {})];
+  searchModels = [...new Set(slugs.map(baseSlug))].map(slug => ({ slug, name:nameOf(slug) }));
+  $('#model-options').innerHTML = searchModels.map(m => `<option value="${esc(m.slug)}">${esc(m.name)}</option>`).join('');
+}
+
 /* 图表动态摘要：canvas 内容读屏器无法朗读，渲染后把榜首写成一句 aria-label */
 function updateChartA11y() {
   if (D.usage.length) {
-    const top = aggregateUsage().sort((a, b) => b.tok-a.tok)[0];
-    $('#chart-usage').setAttribute('aria-label', `用量总榜条形图：24 小时 Top 12，当前第一 ${nameOf(top.slug)}，${fmtTok(top.tok)} Token`);
+    const tokens = usageMetric === 'tokens';
+    const top = aggregateUsage().sort((a, b) => tokens ? b.tok-a.tok : b.req-a.req)[0];
+    $('#chart-usage').setAttribute('aria-label', `用量总榜条形图：24 小时 Top 12，当前第一 ${nameOf(top.slug)}，${tokens ? fmtTok(top.tok)+' Token' : fmtReq(top.req)+' 次请求'}`);
   }
   if (D.disc && Array.isArray(D.disc.authors) && D.disc.authors.length) {
     const top = [...D.disc.authors].sort((a, b) => b.weeklyTokens-a.weeklyTokens)[0];
@@ -703,6 +694,7 @@ function renderAll() {
   safe('value', renderValue); safe('speed', renderSpeed); safe('trend', renderTrend);
   safe('vendors', renderVendors); safe('spend', renderSpendTask); safe('cattabs', renderCatTabs); safe('cat', renderCat); safe('risers', renderRisers);
   safe('a11y', updateChartA11y);
+  safe('search', renderModelSearch);
   (window.MB ? window.MB.subscribers : []).forEach(f => safe('sub', f));
 }
 
@@ -736,8 +728,28 @@ $('#usage-tabs').querySelectorAll('.tab').forEach(btn => btn.addEventListener('c
   usageMetric = btn.dataset.metric;
   $('#usage-tabs').querySelectorAll('.tab').forEach(b => { b.classList.toggle('on', b === btn); b.setAttribute('aria-pressed', b === btn); });
   renderUsage();
+  updateChartA11y();
 }));
 $('#btn-refresh').addEventListener('click', () => { countdown = REFRESH_SEC; fetchAll(true); });
+
+$('#model-search').addEventListener('submit', e => {
+  e.preventDefault();
+  const input = $('#model-query');
+  const query = input.value.trim().toLowerCase();
+  const model = searchModels.find(m => m.slug.toLowerCase() === query || m.name.toLowerCase() === query);
+  if (!model) {
+    input.setAttribute('aria-invalid', 'true');
+    $('#model-search-status').textContent = searchModels.length ? '未找到该模型，请从候选列表中选择完整名称或 slug。' : '模型列表仍在加载，请稍后重试。';
+    return;
+  }
+  input.removeAttribute('aria-invalid');
+  $('#model-search-status').textContent = `已找到 ${model.name}，可在详情中加入对比。`;
+  openCardSlug(model.slug, input);
+});
+$('#model-query').addEventListener('input', e => {
+  e.target.removeAttribute('aria-invalid');
+  $('#model-search-status').textContent = '支持名称或 slug，回车查看详情。';
+});
 
 let rsz;
 window.addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => Object.values(chartInstances).forEach(c => c.resize()), 200); });
@@ -832,6 +844,13 @@ document.addEventListener('click', e => {
   const t = e.target.closest('[data-slug]');
   if (t) openCardSlug(t.dataset.slug, t);
 });
+document.addEventListener('keydown', e => {
+  const t = e.target.closest('[data-slug][tabindex="0"]');
+  if (t && (e.key === 'Enter' || e.key === ' ')) {
+    e.preventDefault();
+    openCardSlug(t.dataset.slug, t);
+  }
+});
 
 /* Streamlit 内嵌时把 iframe 撑到页面真实高度（sandbox 带 allow-same-origin，可直接改 frameElement） */
 if (typeof window !== 'undefined' && window.parent !== window) {
@@ -842,6 +861,8 @@ if (typeof window !== 'undefined' && window.parent !== window) {
       if (fe && h > 600) fe.style.height = (h + 40) + 'px';
     } catch {}
   };
+  window.MB.fitFrame = fitFrame;
+  document.addEventListener('toggle', fitFrame, true);
   window.addEventListener('load', fitFrame);
   window.addEventListener('resize', fitFrame);
   setInterval(() => { if (!document.hidden) fitFrame(); }, 1500);

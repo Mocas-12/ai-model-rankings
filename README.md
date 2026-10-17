@@ -36,8 +36,8 @@
 ---
 
 - **🏆 Usage Top 12** — real token consumption & request counts of the last 24h across 400+ live models, free variants highlighted.
-- **👑 Category Kings** — the current No.1 per discipline: intelligence / coding / agentic (Artificial Analysis), web-dev, dataviz, gamedev, UI (Design Arena ELO), value-for-money and weekly riser.
-- **📐 Dimension Champions** — a one-glance table listing the single strongest model per dimension.
+- **👑 Capability Summary** — three leading models for intelligence / coding / agentic tasks (Artificial Analysis).
+- **📐 Dimension Champions** — expand the capability section for the full table of development, creative, value-for-money and weekly-riser champions.
 - **💰 Price–Performance scatter** — cost per request vs intelligence index, bubble size = usage.
 - **⚡ Speed scatter** — P50 latency vs throughput, bubble = request volume.
 - **📈 30-day trend** — daily token lines of the top 6 models.
@@ -74,7 +74,8 @@ flowchart LR
 
 - **Tokens / Requests** — toggle the usage leaderboard metric.
 - **Category tabs** — switch the category board (编程 / 自然语言 / 长上下文 / 图像 / 工具调用 / 视频).
-- **Toolbox (拾贰, collapsed by default)** — head-to-head compare with shareable `?vs=` URLs, free-models board, China-vs-global duel, price drops, cost calculator.
+- **Section navigation / Model lookup** — jump to any board from the header; enter a full model name or slug in the usage board and press Enter for details.
+- **Toolbox (collapsed by default)** — the header shortcut opens the toolbox directly: head-to-head compare with shareable `?vs=` URLs, free-models board, China-vs-global duel, price drops, cost calculator.
 - **Click any model** — full-dimension popup; "加入对比" sends it to the compare tool; "拓印" renders an ink-wash PNG.
 - **Hover anything** — every chart carries full tooltips (slug, vendor, share, cost, provider).
 - **⟳ 刷新** — force a fresh fetch; data also auto-refreshes every 5 minutes.
