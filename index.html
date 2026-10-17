@@ -18,20 +18,27 @@
 </head>
 <body>
 <div id="loadbar"></div>
+<a class="skip-link" href="#sec-usage">跳到用量总榜</a>
 
 <header class="topbar">
   <div class="wrap topbar-in">
-    <a class="badge-src" href="https://openrouter.ai/rankings" target="_blank" rel="noopener">数据源 · OpenRouter</a>
+    <a class="brand kai" href="#overview" aria-label="墨榜首页">墨榜</a>
+    <nav class="section-nav" aria-label="页面分区">
+      <a href="#sec-usage">用量总榜</a>
+      <a href="#sec-capability">能力评测</a>
+      <a href="#sec-analysis">成本与速度</a>
+      <a href="#sec-trend">趋势洞察</a>
+      <a href="#sec-category">分类用量</a>
+      <a href="#sec-tools">工具箱</a>
+    </nav>
     <div class="topmeta">
-      <span class="upd">更新于 <b id="updated-time">--</b></span>
-      <span class="upd">自动刷新 <b id="countdown">--</b></span>
       <button id="btn-refresh" class="btn-refresh" title="立即刷新数据">⟳ 刷新</button>
       <button id="btn-stamp" class="btn-refresh" title="把今日榜一拓印成水墨卡">拓印</button>
     </div>
   </div>
 </header>
 
-<section class="hero">
+<section class="hero" id="overview" aria-label="墨榜概览">
   <div class="sun" aria-hidden="true"></div>
   <svg class="mountains" viewBox="0 0 1440 250" preserveAspectRatio="none" aria-hidden="true">
     <path d="M0 250 L0 196 L110 148 L196 200 L318 96 L430 186 L560 128 L688 196 L820 150 L940 198 L1064 158 L1188 202 L1310 172 L1440 196 L1440 250 Z" fill="rgba(232,226,210,.07)"/>
@@ -44,8 +51,13 @@
       <span class="hero-seal">战力</span>
       <div class="hero-sub">
         <p class="tagline">AI 大模型实时战力谱</p>
-        <p class="hero-en">LLM RANKS · POWER OF MODELS · LIVE</p>
+        <p class="hero-intro">用量看热度，评测看能力，成本与速度辅助选型。</p>
       </div>
+    </div>
+    <div class="data-status">
+      <a class="badge-src" href="https://openrouter.ai/rankings" target="_blank" rel="noopener">数据源 · OpenRouter</a>
+      <span class="upd">更新于 <b id="updated-time">--</b></span>
+      <span class="upd">自动刷新 <b id="countdown">--</b></span>
     </div>
     <div class="kpis" id="kpis">
       <div class="kpi skeleton"><div class="kpi-label">24h Token 消耗</div><div class="kpi-value">--</div><div class="kpi-sub"></div></div>
@@ -63,65 +75,72 @@
 <main class="wrap">
 
   <!-- 用量总榜 -->
-  <section class="card">
+  <section class="card" id="sec-usage" aria-labelledby="usage-title">
     <div class="card-head">
-      <h2><span class="sec-no">壹</span>用量总榜<span class="h-sub">24 小时真实 Token 消耗 · Top 12</span></h2>
+      <h2 id="usage-title">用量总榜<span class="h-sub" id="usage-sub">24 小时真实 Token 消耗 · Top 12</span></h2>
       <div class="tabs" id="usage-tabs" role="group" aria-label="用量指标切换">
         <button class="tab on" data-metric="tokens" aria-pressed="true">Tokens</button>
         <button class="tab" data-metric="requests" aria-pressed="false">请求次数</button>
       </div>
     </div>
+    <form class="model-search" id="model-search" role="search" aria-label="查找模型">
+      <label for="model-query">查找模型</label>
+      <div class="search-inputs">
+        <input id="model-query" list="model-options" placeholder="输入模型名称或 slug" aria-describedby="model-search-status" autocomplete="off" required>
+        <datalist id="model-options"></datalist>
+        <button class="btn-refresh" type="submit">查看详情</button>
+      </div>
+      <p id="model-search-status" role="status">支持名称或 slug，回车查看详情。</p>
+    </form>
     <div class="chart tall" id="chart-usage" role="img" aria-label="用量总榜条形图：24 小时 Token 消耗或请求次数 Top 12"><div class="ph">加载中…</div></div>
   </section>
 
-  <!-- 分项王者 -->
-  <section class="card">
-    <div class="card-head"><h2><span class="sec-no">贰</span>分项王者<span class="h-sub">每个维度当下的 No.1</span></h2></div>
+  <!-- 核心能力摘要与完整维度合并，减少重复浏览 -->
+  <section class="card" id="sec-capability" aria-labelledby="capability-title">
+    <div class="card-head"><h2 id="capability-title">能力评测<span class="h-sub">综合智能、编程、智能体任务的领先模型</span></h2></div>
     <div class="kings" id="kings"><div class="ph">加载中…</div></div>
+    <details class="dimension-details" id="dimensions">
+      <summary>查看全部维度之最<span>开发、创作、性价比与周涨幅</span></summary>
+      <div class="dimtable" id="dimtable"><div class="ph">加载中…</div></div>
+    </details>
   </section>
 
-  <!-- 维度之最 -->
-  <section class="card">
-    <div class="card-head"><h2><span class="sec-no">叁</span>维度之最<span class="h-sub">每个维度当下最强的模型 · 一眼定位</span></h2></div>
-    <div class="dimtable" id="dimtable"><div class="ph">加载中…</div></div>
-  </section>
-
-  <div class="grid2">
+  <div class="grid2" id="sec-analysis" role="group" aria-label="成本与速度">
     <!-- 性价比 -->
     <section class="card">
-      <div class="card-head"><h2><span class="sec-no">肆</span>性价比图<span class="h-sub">单请求成本 vs 智能指数 · 越靠左上越值</span></h2></div>
+      <div class="card-head"><h2>性价比图<span class="h-sub">单请求成本 vs 智能指数 · 越靠左上越值</span></h2></div>
       <div class="chart sq" id="chart-value" role="img" aria-label="性价比散点图：单请求成本与智能指数，气泡大小为用量"><div class="ph">加载中…</div></div>
     </section>
     <!-- 速度 -->
     <section class="card">
-      <div class="card-head"><h2><span class="sec-no">伍</span>速度榜<span class="h-sub">P50 延迟 vs 吞吐 · 气泡=请求量</span></h2></div>
+      <div class="card-head"><h2>速度榜<span class="h-sub">P50 延迟 vs 吞吐 · 气泡大小为请求量</span></h2></div>
       <div class="chart sq" id="chart-speed" role="img" aria-label="速度散点图：P50 延迟与吞吐，气泡大小为请求量"><div class="ph">加载中…</div></div>
     </section>
   </div>
 
   <!-- 趋势 -->
-  <section class="card">
-    <div class="card-head"><h2><span class="sec-no">陆</span>30 天用量趋势<span class="h-sub">头部模型每日 Token 消耗 · Top 6</span></h2></div>
+  <section class="card" id="sec-trend">
+    <div class="card-head"><h2>30 天用量趋势<span class="h-sub">头部模型每日 Token 消耗 · Top 6</span></h2></div>
     <div class="chart" id="chart-trend" role="img" aria-label="30 天用量趋势折线图：头部模型每日 Token 消耗"><div class="ph">加载中…</div></div>
   </section>
 
   <div class="grid2">
     <!-- 厂商份额 -->
     <section class="card">
-      <div class="card-head"><h2><span class="sec-no">柒</span>厂商份额<span class="h-sub">近 7 天 Token 占比</span></h2></div>
+      <div class="card-head"><h2>厂商份额<span class="h-sub">近 7 天 Token 占比</span></h2></div>
       <div class="chart sq" id="chart-vendors" role="img" aria-label="厂商份额环形图：近 7 天 Token 占比"><div class="ph">加载中…</div></div>
     </section>
     <!-- 任务花费 -->
     <section class="card">
-      <div class="card-head"><h2><span class="sec-no">捌</span>钱花在哪<span class="h-sub">30 天任务花费占比</span></h2></div>
+      <div class="card-head"><h2>钱花在哪<span class="h-sub">30 天任务花费占比</span></h2></div>
       <div class="chart sq" id="chart-spend" role="img" aria-label="任务花费环形图：30 天任务花费占比"><div class="ph">加载中…</div></div>
     </section>
   </div>
 
   <!-- 分类榜 -->
-  <section class="card">
+  <section class="card" id="sec-category">
     <div class="card-head">
-      <h2><span class="sec-no">玖</span>分类用量榜<span class="h-sub" id="cat-sub">最新一天分类消耗 · Top 8</span></h2>
+      <h2>分类用量榜<span class="h-sub" id="cat-sub">最新一天分类消耗 · Top 8</span></h2>
       <div class="tabs" id="cat-tabs"></div>
     </div>
     <div class="chart tall" id="chart-cat" role="img" aria-label="分类用量榜条形图：可切换编程、自然语言、长上下文、图像、工具调用、视频生成"><div class="ph">加载中…</div></div>
@@ -129,20 +148,20 @@
 
   <!-- 本周黑马 -->
   <section class="card">
-    <div class="card-head"><h2><span class="sec-no">拾</span>本周黑马<span class="h-sub">用量周涨幅最大的模型</span></h2></div>
+    <div class="card-head"><h2>本周黑马<span class="h-sub">用量周涨幅最大的模型</span></h2></div>
     <div class="risers" id="risers"><div class="ph">加载中…</div></div>
   </section>
 
   <!-- 新模型 -->
   <section class="card" id="sec-new" hidden>
-    <div class="card-head"><h2><span class="sec-no">拾壹</span>新上架模型<span class="h-sub">近 14 天登录 OpenRouter</span></h2></div>
+    <div class="card-head"><h2>新上架模型<span class="h-sub">近 14 天登录 OpenRouter</span></h2></div>
     <div class="newmodels" id="newmodels"></div>
   </section>
 
   <!-- 工具箱（默认折叠，保护首屏一眼看完的定位） -->
   <section class="card" id="sec-tools">
     <div class="card-head">
-      <h2><span class="sec-no">拾贰</span>工具箱<span class="h-sub">对比 · 白嫖 · 对决 · 降价 · 算账</span></h2>
+      <h2>工具箱<span class="h-sub">对比 · 白嫖 · 对决 · 降价 · 算账</span></h2>
       <button id="tools-toggle" class="btn-refresh" aria-expanded="false" aria-controls="tools-body">展开 ▾</button>
     </div>
     <div id="tools-body" hidden>
