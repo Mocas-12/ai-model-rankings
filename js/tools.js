@@ -95,7 +95,13 @@ function renderVs() {
 /* ---------------- 白嫖榜 ---------------- */
 function renderFree() {
   const rows = aggregateUsage().filter(r => r.freeTok > 0).sort((a, b) => b.freeTok - a.freeTok).slice(0, 12);
-  if (!rows.length) { $('#chart-free').innerHTML = '<div class="ph">当前 24h 无 free 变体调用</div>'; return; }
+  if (!rows.length) {
+    const el = $('#chart-free');
+    const inst = typeof echarts !== 'undefined' ? echarts.getInstanceByDom(el) : null;
+    if (inst) inst.dispose();
+    el.innerHTML = '<div class="ph">当前 24h 无 free 变体调用</div>';
+    return;
+  }
   const c = chart('chart-free');
   if (!c) return;
   c.setOption({

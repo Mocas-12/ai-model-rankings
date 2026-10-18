@@ -33,7 +33,8 @@ self.addEventListener('fetch', e => {
   if (url.origin !== location.origin) return;   // OpenRouter 数据/字体/CDN 一律直连
   const p = url.pathname;
   const isCore = e.request.mode === 'navigate' || p.endsWith('.html') ||
-                 p.endsWith('.js') || p.endsWith('.css') || p.endsWith('.webmanifest');
+                 p.endsWith('.js') || p.endsWith('.css') || p.endsWith('.webmanifest') ||
+                 p.endsWith('.json');
   if (isCore) {
     // 核心资源：网络优先，断网才回退缓存——保证发版后第一时间是新代码
     e.respondWith(

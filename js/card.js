@@ -41,7 +41,7 @@ function openCard(slug, anchorEl) {
   const ctx = f.ctx ? (f.ctx >= 1e6 ? (f.ctx/1e6).toFixed(1).replace(/\.0$/, '') + 'M' : Math.round(f.ctx/1000) + 'K') : '--';
   const chips = (f.hasFree ? '<sup class="m-chip free">FREE</sup>' : '') + (f.hasBatch ? '<sup class="m-chip batch">BATCH</sup>' : '');
   const daRows = Object.entries(f.da).map(([k, v]) =>
-    stat(DA_LABEL[k] || k, Math.round(v.elo) + (v.win != null ? ' <small>胜' + v.win.toFixed(0) + '%</small>' : ''))).join('');
+    stat(esc(DA_LABEL[k] || k), Math.round(v.elo) + (v.win != null ? ' <small>胜' + v.win.toFixed(0) + '%</small>' : ''))).join('');
   $('#modal-body').innerHTML =
     `<h3 class="m-name" style="color:${authorColor(f.author)}">${esc(f.name)}${chips}</h3>` +
     `<p class="m-slug">${esc(f.slug)} · ${esc(authorName(f.author))}${f.created ? ' · ' + esc(f.created.slice(0, 10)) + ' 上架' : ''}</p>` +
@@ -211,5 +211,4 @@ async function stamp(mode, f) {
 $('#btn-stamp').addEventListener('click', () => stamp('board'));
 
 window.MB.openCard = openCard;
-window.MB.stamp = stamp;
 })();

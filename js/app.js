@@ -292,7 +292,7 @@ async function lazyCatalog() {
 /* ---------------- 图表注册 ---------------- */
 function chart(id) {
   if (typeof echarts === 'undefined') { $('#'+id).innerHTML = '<div class="ph">图表库加载失败，请检查网络后刷新</div>'; return null; }
-  if (!chartInstances[id]) {
+  if (!chartInstances[id] || chartInstances[id].isDisposed()) {
     const el = $('#'+id);
     el.innerHTML = '';
     chartInstances[id] = echarts.init(el, { animation: !matchMedia('(prefers-reduced-motion: reduce)').matches }, { renderer:'canvas' });
