@@ -3,3 +3,5 @@ __pycache__/
 _probe/
 test-results/
 playwright-report/
+
+.hallmark/

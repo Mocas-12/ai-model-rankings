@@ -3,7 +3,7 @@
  * 工具箱默认折叠，点开 tab 才渲染；MB.subscribers 在每次 renderAll 后触发刷新。 */
 (() => {
 'use strict';
-const { D, esc, fmtTok, fmtReq, fmtUsd, nameOf, authorName, authorOf, authorColor, baseSlug, chart, modelFacts, isNarrow, aggregateUsage } = window.MB;
+const { D, esc, fmtTok, fmtReq, fmtUsd, nameOf, authorName, authorOf, authorColor, baseSlug, chart, modelFacts, isNarrow, aggregateUsage, themeColor } = window.MB;
 const $ = s => document.querySelector(s);
 const CN_AUTHORS = new Set(['deepseek', 'z-ai', 'moonshotai', 'qwen', 'minimax', 'bytedance', 'tencent',
   'baidu', 'xiaomi', 'alibaba', 'inclusionai', 'stepfun', 'thudm', 'kwaivgi', 'nexai']);
@@ -112,11 +112,11 @@ function renderFree() {
         return `<b>${esc(f.name)}</b><br>free Token：${fmtTok(r.freeTok)}<br>综合智能：${f.aa.intelligence != null ? f.aa.intelligence.toFixed(1) : '--'}`;
       } },
     grid: { left:8, right: isNarrow()?54:90, top:10, bottom:10, containLabel:true },
-    xAxis: { type:'value', splitNumber: isNarrow()?3:null, axisLine:{lineStyle:{color:'#454036'}}, axisTick:{show:false}, axisLabel:{ color:'#a89f8a', fontSize:isNarrow()?10:11, hideOverlap:true, formatter:fmtTok }, splitLine:{lineStyle:{color:'#322d25'}} },
-    yAxis: { type:'category', inverse:true, data:rows.map(r => nameOf(r.slug)), axisLine:{lineStyle:{color:'#454036'}}, axisTick:{show:false}, axisLabel:{ color:'#ddd6c4', fontSize:12, width: isNarrow()?126:170, overflow:'break', lineHeight:15 } },
+    xAxis: { type:'value', splitNumber: isNarrow()?3:null, axisLine:{lineStyle:{color:themeColor('line')}}, axisTick:{show:false}, axisLabel:{ color:themeColor('txt2'), fontSize:12, hideOverlap:true, formatter:fmtTok }, splitLine:{lineStyle:{color:themeColor('line')}} },
+    yAxis: { type:'category', inverse:true, data:rows.map(r => nameOf(r.slug)), axisLine:{lineStyle:{color:themeColor('line')}}, axisTick:{show:false}, axisLabel:{ color:themeColor('txt'), fontSize:12, width: isNarrow()?126:170, overflow:'break', lineHeight:15 } },
     series: [{ type:'bar', data:rows.map(r => r.freeTok), barWidth:'56%',
-      label: { show:true, position:'right', color:'#a89f8a', fontSize:11, formatter:p => fmtTok(p.value) },
-      itemStyle: { borderRadius:[0, 2, 2, 0], color:'#7a9a8e' } }],
+      label: { show:true, position:'right', color:themeColor('txt2'), fontSize:12, formatter:p => fmtTok(p.value) },
+      itemStyle: { borderRadius:[0, 2, 2, 0], color:themeColor('teal') } }],
   }, { notMerge: true });
   c.off('click'); c.on('click', p => { if (p.componentType === 'series') window.MB.openCardSlug(rows[p.dataIndex].slug, c.getDom()); });
 }

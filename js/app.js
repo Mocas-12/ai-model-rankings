@@ -1,4 +1,4 @@
-/* LLMRANKS · AI 大模型实时战力榜
+/* LLMRANKS，AI 大模型实时战力榜
  * 数据源：OpenRouter 公开前端接口（CORS 全开，纯静态可跑）
  *  - rankings/models?view=day   24h 逐模型用量
  *  - rankings/benchmarks        AA 智能/编程/智能体分 + Design Arena 各项 ELO + 成本
@@ -32,19 +32,21 @@ const REFRESH_SEC = 300;
 
 /* ---------------- 小工具 ---------------- */
 const $ = s => document.querySelector(s);
+const themeStyle = window.getComputedStyle(document.documentElement);
+const themeColor = name => themeStyle.getPropertyValue('--'+name).trim();
 const PAL = [
-  '#6f9bc4', // 花青
-  '#e0b04a', // 藤黄
-  '#63a583', // 石绿
-  '#a87ab0', // 紫棠
-  '#c99a5f', // 赭石
-  '#a0a858', // 苔绿
-  '#7ec8c0', // 青碧
-  '#9aa8d4', // 青金
-  '#d4c9a2', // 月白
+  themeColor('chart-blue'), // 花青
+  themeColor('chart-yellow'), // 藤黄
+  themeColor('chart-green'), // 石绿
+  themeColor('chart-plum'), // 紫棠
+  themeColor('gold'), // 赭石
+  themeColor('chart-moss'), // 苔绿
+  themeColor('chart-aqua'), // 青碧
+  themeColor('chart-indigo'), // 青金
+  themeColor('chart-paper'), // 月白
 ];
-const TIP = { backgroundColor:'#26221b', borderColor:'#454036', textStyle:{color:'#ddd6c4',fontSize:12}, confine:true, extraCssText:'box-shadow:0 4px 16px rgba(0,0,0,.45);' };
-const AXIS_C = line => ({ axisLine:{lineStyle:{color:'#454036'}}, axisTick:{show:false}, axisLabel:{color:'#a89f8a',fontSize:11}, splitLine: line?{lineStyle:{color:'#322d25'}}:{show:false} });
+const TIP = { backgroundColor:themeColor('card'), borderColor:themeColor('line'), textStyle:{color:themeColor('txt'),fontSize:13,fontFamily:themeColor('font-ui')}, confine:true };
+const AXIS_C = line => ({ axisLine:{lineStyle:{color:themeColor('line')}}, axisTick:{show:false}, axisLabel:{color:themeColor('txt2'),fontSize:12}, splitLine: line?{lineStyle:{color:themeColor('line')}}:{show:false} });
 
 const fmtTok  = n => n >= 1e12 ? (n/1e12).toFixed(2)+' 万亿' : n >= 1e8 ? (n/1e8).toFixed(1)+' 亿' : n >= 1e4 ? (n/1e4).toFixed(1)+' 万' : String(Math.round(n));
 const fmtReq  = n => n >= 1e8 ? (n/1e8).toFixed(2)+'亿' : n >= 1e4 ? (n/1e4).toFixed(1)+'万' : String(Math.round(n));
@@ -65,26 +67,26 @@ const AUTHORS = {
 const authorName  = a => AUTHORS[a] || (a ? a.charAt(0).toUpperCase()+a.slice(1) : '');
 /* 真实品牌色：图表里的厂商颜色与其官方识别色一致 */
 const BRAND = {
-  anthropic:'#d97757',  // Claude 橘
-  'z-ai':'#4d7cfe',     // 智谱 GLM 蓝
-  deepseek:'#5a7dff',   // DeepSeek 蓝
-  openai:'#10a37f',     // OpenAI 绿
-  google:'#4285f4',     // Google 蓝
-  'x-ai':'#b8bfca',     // xAI 银灰
-  meta:'#4a8cf0',       // Meta 蓝
-  qwen:'#8b5cf6',       // 通义 紫
-  mistralai:'#fa6c3c',  // Mistral 橙
-  moonshotai:'#6b7cff', // Kimi 蓝
-  minimax:'#e05a6d',    // MiniMax 红
-  bytedance:'#3c8cff',  // 豆包 蓝
-  tencent:'#5a6cf0',    // 混元 蓝紫
-  baidu:'#4a63e8',      // 文心 蓝
-  nvidia:'#76b900',     // NVIDIA 绿
-  microsoft:'#00a4ef',  // 微软蓝
-  amazon:'#ff9900',     // Amazon 橙
-  xiaomi:'#ff6900',     // 小米橙
-  alibaba:'#ff8a00',    // 阿里橙
-  perplexity:'#3fa8a0', // Perplexity 青
+  anthropic:themeColor('provider-anthropic'),  // Claude 橘
+  'z-ai':themeColor('provider-zai'),     // 智谱 GLM 蓝
+  deepseek:themeColor('provider-deepseek'),   // DeepSeek 蓝
+  openai:themeColor('provider-openai'),     // OpenAI 绿
+  google:themeColor('provider-google'),     // Google 蓝
+  'x-ai':themeColor('provider-xai'),     // xAI 银灰
+  meta:themeColor('provider-meta'),       // Meta 蓝
+  qwen:themeColor('provider-qwen'),       // 通义 紫
+  mistralai:themeColor('provider-mistral'),  // Mistral 橙
+  moonshotai:themeColor('provider-moonshot'), // Kimi 蓝
+  minimax:themeColor('provider-minimax'),    // MiniMax 红
+  bytedance:themeColor('provider-bytedance'),  // 豆包 蓝
+  tencent:themeColor('provider-tencent'),    // 混元 蓝紫
+  baidu:themeColor('provider-baidu'),      // 文心 蓝
+  nvidia:themeColor('provider-nvidia'),     // NVIDIA 绿
+  microsoft:themeColor('provider-microsoft'),  // 微软蓝
+  amazon:themeColor('provider-amazon'),     // Amazon 橙
+  xiaomi:themeColor('provider-xiaomi'),     // 小米橙
+  alibaba:themeColor('provider-alibaba'),    // 阿里橙
+  perplexity:themeColor('provider-perplexity'), // Perplexity 青
 };
 const authorColor = a => {
   if (BRAND[a]) return BRAND[a];
@@ -295,7 +297,7 @@ function chart(id) {
   if (!chartInstances[id] || chartInstances[id].isDisposed()) {
     const el = $('#'+id);
     el.innerHTML = '';
-    chartInstances[id] = echarts.init(el, { animation: !matchMedia('(prefers-reduced-motion: reduce)').matches }, { renderer:'canvas' });
+    chartInstances[id] = echarts.init(el, { textStyle:{fontFamily:themeColor('font-ui')}, animation: !matchMedia('(prefers-reduced-motion: reduce)').matches }, { renderer:'canvas' });
   }
   return chartInstances[id];
 }
@@ -319,7 +321,7 @@ function renderKPI() {
   cards[2].classList.remove('skeleton'); cards[2].querySelector('.kpi-value').textContent = bases.size;
   cards[2].querySelector('.kpi-sub').textContent = '24h 内有调用的模型';
   cards[3].classList.remove('skeleton'); cards[3].querySelector('.kpi-value').textContent = nameOf(top.slug);
-  cards[3].querySelector('.kpi-sub').textContent = authorName(authorOf(top.slug))+' · '+fmtTok(top.tok);
+  cards[3].querySelector('.kpi-sub').textContent = authorName(authorOf(top.slug))+'，'+fmtTok(top.tok);
 }
 
 /* ---------- 用量总榜 ---------- */
@@ -333,26 +335,26 @@ function renderUsage() {
   const names = rows.map(r => nameOf(r.slug));
   const vals  = rows.map(r => metric(r));
   const fmtr  = usageMetric === 'tokens' ? fmtTok : fmtReq;
-  $('#usage-sub').textContent = `24 小时真实${usageMetric === 'tokens' ? ' Token 消耗' : '请求次数'} · Top 12`;
+  $('#usage-sub').textContent = `24 小时真实${usageMetric === 'tokens' ? ' Token 消耗' : '请求次数'}，Top 12`;
   c.setOption({
     tooltip: Object.assign({ trigger:'axis', axisPointer:{type:'shadow'}, formatter(ps) {
       const r = rows[ps[0].dataIndex];
       const mix = r.tok > 0
         ? [r.stdTok > 0 ? '标准 '+(r.stdTok/r.tok*100).toFixed(0)+'%' : '',
            r.freeTok > 0 ? 'free '+(r.freeTok/r.tok*100).toFixed(0)+'%' : '',
-           r.batchTok > 0 ? 'batch '+(r.batchTok/r.tok*100).toFixed(0)+'%' : ''].filter(Boolean).join(' · ')
+           r.batchTok > 0 ? 'batch '+(r.batchTok/r.tok*100).toFixed(0)+'%' : ''].filter(Boolean).join('，')
         : '';
       return `<b>${esc(nameOf(r.slug))}</b><br>` +
         `${esc(r.slug)}<br>Token：${fmtTok(r.tok)}（占全平台 ${(r.tok/total*100).toFixed(1)}%）<br>请求：${fmtReq(r.req)} 次` +
-        (mix ? `<br><span style="color:#7a9a8e">变体构成：${mix}</span>` : '') +
+        (mix ? `<br><span style="color:var(--teal)">变体构成：${mix}</span>` : '') +
         `<br>厂商：${esc(authorName(authorOf(r.slug)))}`;
     } }, TIP),
     grid: { left:8, right: isNarrow()?54:90, top:10, bottom:10, containLabel:true },
-    xAxis: Object.assign(AXIS_C(true), { type:'value', splitNumber: isNarrow()?3:null, axisLabel:{ color:'#a89f8a', fontSize:isNarrow()?10:11, hideOverlap:true, formatter:fmtr } }),
-    yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:names, axisLabel:{ color:'#ddd6c4', fontSize:12, width: isNarrow()?126:170, overflow:'break', lineHeight:15 } }),
+    xAxis: Object.assign(AXIS_C(true), { type:'value', splitNumber: isNarrow()?3:null, axisLabel:{ color:themeColor('txt2'), fontSize:12, hideOverlap:true, formatter:fmtr } }),
+    yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:names, axisLabel:{ color:themeColor('txt'), fontSize:12, width: isNarrow()?126:170, overflow:'break', lineHeight:15 } }),
     series: [{
       type:'bar', data:vals, barWidth:'56%',
-      label: { show:true, position:'right', color:'#a89f8a', fontSize:11, formatter: p => fmtr(p.value) },
+      label: { show:true, position:'right', color:themeColor('txt2'), fontSize:12, formatter: p => fmtr(p.value) },
       itemStyle: { borderRadius:[0, 2, 2, 0], color: p => authorColor(authorOf(rows[p.dataIndex].slug)) },
     }],
   }, { notMerge:true });
@@ -397,14 +399,14 @@ function renderDimTable() {
   });
   [['models-website','网页开发'], ['models-dataviz','数据可视化'], ['models-gamedev','游戏开发'], ['models-uicomponent','UI 组件'], ['models-svg','SVG 绘图'], ['models-3d','3D 建模'], ['agents-agenticslides(html)','演示幻灯片']].forEach(([k, label]) => {
     const m = top1(da[k]);
-    if (m) rows.push([label, m.permaslug, 'ELO '+Math.round(m.score)+' · 胜率 '+(m.win_rate != null ? m.win_rate.toFixed(0)+'%' : '--'), 'Design Arena']);
+    if (m) rows.push([label, m.permaslug, 'ELO '+Math.round(m.score)+'，胜率 '+(m.win_rate != null ? m.win_rate.toFixed(0)+'%' : '--'), 'Design Arena']);
   });
   const best = [...(aa.intelligence || [])].sort((a, b2) => b2.score-a.score).slice(0, 30)
     .map(m => ({ ...m, cost: nameIdx.cost[baseSlug(m.permaslug)] }))
     .filter(m => m.cost != null).sort((a, b2) => a.cost-b2.cost)[0];
-  if (best) rows.push(['性价比', best.permaslug, fmtUsd(best.cost)+' / 次 · 智能 '+best.score.toFixed(1), '成本 × 智能']);
+  if (best) rows.push(['性价比', best.permaslug, fmtUsd(best.cost)+' / 次，智能 '+best.score.toFixed(1), '成本 × 智能']);
   const cl = (D.disc && D.disc.climbing || []).filter(x => x.weeklyTokens > 1e11).sort((a, b2) => b2.changePercent-a.changePercent)[0];
-  if (cl) rows.push(['周涨幅', cl.variantPermaslug, growTxt(cl.changePercent, cl.weeklyTokens, cl.prevWeeklyTokens)+' · 周 '+fmtTok(cl.weeklyTokens), 'OpenRouter']);
+  if (cl) rows.push(['周涨幅', cl.variantPermaslug, growTxt(cl.changePercent, cl.weeklyTokens, cl.prevWeeklyTokens)+'，周 '+fmtTok(cl.weeklyTokens), 'OpenRouter']);
   $('#dimtable').innerHTML = `<table class="dim-t"><thead><tr><th>维度</th><th>最强模型</th><th>数值</th><th class="th-src">数据源</th></tr></thead><tbody>` +
     rows.map(r => `<tr data-slug="${esc(r[1])}" tabindex="0" aria-label="查看${esc(nameOf(r[1]))}的${esc(r[0])}详情"><td class="td-cat">${esc(r[0])}</td><td class="td-model">${esc(nameOf(r[1]))}<span class="td-author">${esc(authorName(authorOf(r[1])))}</span></td><td class="td-val">${esc(r[2])}</td><td class="td-src">${esc(r[3])}</td></tr>`).join('') +
     `</tbody></table>`;
@@ -438,13 +440,13 @@ function renderValue() {
     } }, TIP),
     grid: { left:10, right: isNarrow()?56:110, top:30, bottom:10, containLabel:true },
     legend: { show:false },
-    xAxis: Object.assign(AXIS_C(true), { type:'log', min: v => v.min/2, max: v => v.max*2, axisLabel:{ color:'#a89f8a', fontSize:10.5, formatter:v => '$'+v } }),
-    yAxis: Object.assign(AXIS_C(true), { type:'value', min:'dataMin', max:'dataMax', axisLabel:{ color:'#a89f8a', fontSize:10.5 } }),
+    xAxis: Object.assign(AXIS_C(true), { type:'log', min: v => v.min/2, max: v => v.max*2, axisLabel:{ color:themeColor('txt2'), fontSize:12, formatter:v => '$'+v } }),
+    yAxis: Object.assign(AXIS_C(true), { type:'value', min:'dataMin', max:'dataMax', axisLabel:{ color:themeColor('txt2'), fontSize:12 } }),
     series: [{
       type:'scatter', data,
       symbolSize: d => Math.min(34, 6+Math.sqrt(d[2])/32000),
-      itemStyle: { color: p => authorColor(authorOf(p.name)), borderColor:'rgba(221,214,196,.45)', borderWidth: p => labelSet.has(p.name) ? 2 : 1 },
-      label: { show:true, fontSize:10.5, color:'#b5ad99', formatter:p => labelSet.has(p.name) ? labTxt(p.name) : '' },
+      itemStyle: { color: p => authorColor(authorOf(p.name)), borderColor:themeColor('chart-outline'), borderWidth: p => labelSet.has(p.name) ? 2 : 1 },
+      label: { show:true, fontSize:12, color:themeColor('txt2'), formatter:p => labelSet.has(p.name) ? labTxt(p.name) : '' },
       labelLayout: { hideOverlap:true, moveOverlap:'shiftY' },
       emphasis: { scale:1.15 },
     }],
@@ -467,15 +469,15 @@ function renderSpeed() {
       return `<b>${esc(nameOf(r.slug))}</b><br>P50 延迟：${(r.p50_latency/1000).toFixed(2)} s<br>P50 吞吐：${Math.round(r.p50_throughput)} tok/s<br>请求数：${fmtReq(r.request_count||0)}<br>最快线路：${esc(r.best_latency_provider || '--')}（${fmtUsd(r.best_latency_price||0)}/M）`;
     } }, TIP),
     grid: { left:10, right: isNarrow()?56:90, top:30, bottom:10, containLabel:true },
-    xAxis: Object.assign(AXIS_C(true), { type:'log', axisLabel:{ color:'#a89f8a', fontSize:10.5, formatter:v => v >= 1000 ? (v/1000)+'s' : v } }),
-    yAxis: Object.assign(AXIS_C(true), { type:'value', axisLabel:{ color:'#a89f8a', fontSize:10.5 } }),
+    xAxis: Object.assign(AXIS_C(true), { type:'log', axisLabel:{ color:themeColor('txt2'), fontSize:12, formatter:v => v >= 1000 ? (v/1000)+'s' : v } }),
+    yAxis: Object.assign(AXIS_C(true), { type:'value', axisLabel:{ color:themeColor('txt2'), fontSize:12 } }),
     series: [{
       type:'scatter',
       data: rows.map(r => ({ value:[r.p50_latency, r.p50_throughput, r.request_count], name:r.slug,
         label:{ position: r.p50_throughput >= tMax-8 ? 'bottom' : 'top' },
-        itemStyle:{ color: authorColor(authorOf(r.slug)), borderColor: labelSet.has(r.slug) ? '#c74a3c' : 'rgba(221,214,196,.45)', borderWidth: labelSet.has(r.slug) ? 2 : 1 } })),
+        itemStyle:{ color: authorColor(authorOf(r.slug)), borderColor: labelSet.has(r.slug) ? themeColor('red') : themeColor('chart-outline'), borderWidth: labelSet.has(r.slug) ? 2 : 1 } })),
       symbolSize: d => 7+Math.sqrt(d[2]/maxReq)*22,
-      label: { show:true, fontSize:10.5, color:'#b5ad99', formatter:p => labelSet.has(p.name) ? nameOf(p.name).replace(/\s*\([^)]*\)/g, '').slice(0, 18) : '' },
+      label: { show:true, fontSize:12, color:themeColor('txt2'), formatter:p => labelSet.has(p.name) ? nameOf(p.name).replace(/\s*\([^)]*\)/g, '').slice(0, 18) : '' },
       labelLayout: { hideOverlap:true, moveOverlap:'shiftY' },
     }],
   }, { notMerge:true });
@@ -496,10 +498,10 @@ function renderTrend() {
   const top = Object.keys(sums).sort((a, b) => sums[b]-sums[a]).slice(0, 6);
   c.setOption({
     tooltip: Object.assign({ trigger:'axis' }, TIP),
-    legend: { type:'scroll', top:0, textStyle:{ color:'#b5ad99', fontSize:11 }, pageIconColor:'#c74a3c', pageTextStyle:{color:'#a89f8a'} },
+    legend: { type:'scroll', top:0, textStyle:{ color:themeColor('txt2'), fontSize:12 }, pageIconColor:themeColor('red'), pageTextStyle:{color:themeColor('txt2')} },
     grid: { left:10, right:20, top:38, bottom:6, containLabel:true },
     xAxis: Object.assign({ type:'category', boundaryGap:false, data:dates }, AXIS_C(true)),
-    yAxis: Object.assign(AXIS_C(true), { type:'value', axisLabel:{ color:'#a89f8a', fontSize:11, formatter:fmtTok } }),
+    yAxis: Object.assign(AXIS_C(true), { type:'value', axisLabel:{ color:themeColor('txt2'), fontSize:12, formatter:fmtTok } }),
     series: top.map(s => ({
       name: nameOf(s), type:'line', smooth:true, showSymbol:false,
       data: rows.map(d => d.ys[s] || null),
@@ -518,21 +520,21 @@ function renderVendors() {
   c.setOption({
     tooltip: Object.assign({ trigger:'item', formatter(p) {
       const r = rows[p.dataIndex];
-      const g = r.changePercent != null ? (r.changePercent >= 0 ? '<span style="color:#e0654f">+'+(r.changePercent*100).toFixed(1)+'%</span>' : '<span style="color:#8d8677">'+(r.changePercent*100).toFixed(1)+'%</span>') : '';
+      const g = r.changePercent != null ? (r.changePercent >= 0 ? '<span style="color:var(--red-bright)">+'+(r.changePercent*100).toFixed(1)+'%</span>' : '<span style="color:var(--txt3)">'+(r.changePercent*100).toFixed(1)+'%</span>') : '';
       const shareSum = rows.reduce((s, x) => s + (x.share || 0), 0);
       const tail = 100 - shareSum;
       const sane = shareSum > 50 && shareSum <= 102;   // 边缘节点偶发坏 share，异常时跳过份额行
       return `<b>${esc(authorName(r.author))}</b><br>周 Token：${fmtTok(r.weeklyTokens)}` +
         (sane ? `<br>份额：${(r.share*100).toFixed(1)}% ${g ? '· 环比 '+g : ''}` +
-          (tail > 0.05 ? `<br><span style="color:#7a7260">其余长尾厂商合计 ${tail.toFixed(1)}%（未展示）</span>` : '') : '<br><span style="color:#7a7260">份额数据波动中</span>');
+          (tail > 0.05 ? `<br><span style="color:var(--txt3)">其余长尾厂商合计 ${tail.toFixed(1)}%（未展示）</span>` : '') : '<br><span style="color:var(--txt3)">份额数据波动中</span>');
     } }, TIP),
     legend: nar
-      ? { orient:'horizontal', bottom:0, left:'center', textStyle:{ color:'#b5ad99', fontSize:10 }, itemWidth:10, itemHeight:10 }
-      : { orient:'vertical', right:0, top:'middle', textStyle:{ color:'#b5ad99', fontSize:11 }, itemWidth:10, itemHeight:10 },
+      ? { orient:'horizontal', bottom:0, left:'center', textStyle:{ color:themeColor('txt2'), fontSize:12 }, itemWidth:10, itemHeight:10 }
+      : { orient:'vertical', right:0, top:'middle', textStyle:{ color:themeColor('txt2'), fontSize:12 }, itemWidth:10, itemHeight:10 },
     series: [{
       type:'pie', center: nar ? ['50%', '38%'] : ['32%', '52%'], radius: nar ? ['36%', '56%'] : ['48%', '72%'],
       data: rows.map(r => ({ name:authorName(r.author), value:r.weeklyTokens, itemStyle:{ color:authorColor(r.author) } })),
-      label: { show:true, position:'center', formatter:'厂商\n格局', fontSize:14, color:'#a89f8a', lineHeight:20 },
+      label: { show:true, position:'center', formatter:'厂商\n格局', fontSize:14, color:themeColor('txt2'), lineHeight:20 },
       itemStyle: { borderColor:'#1d1a15', borderWidth:2, borderRadius:4 },
       emphasis: { scaleSize:5 },
     }],
@@ -553,12 +555,12 @@ function renderSpendTask() {
   c.setOption({
     tooltip: Object.assign({ trigger:'item', formatter:p => `<b>${esc(p.name)}</b><br>占 30 天花费 ${p.value}%` }, TIP),
     legend: nar
-      ? { orient:'horizontal', bottom:0, left:'center', textStyle:{ color:'#b5ad99', fontSize:10 }, itemWidth:10, itemHeight:10 }
-      : { orient:'vertical', right:0, top:'middle', textStyle:{ color:'#b5ad99', fontSize:11 }, itemWidth:10, itemHeight:10 },
+      ? { orient:'horizontal', bottom:0, left:'center', textStyle:{ color:themeColor('txt2'), fontSize:12 }, itemWidth:10, itemHeight:10 }
+      : { orient:'vertical', right:0, top:'middle', textStyle:{ color:themeColor('txt2'), fontSize:12 }, itemWidth:10, itemHeight:10 },
     series: [{
       type:'pie', center: nar ? ['50%', '38%'] : ['32%', '52%'], radius: nar ? ['36%', '56%'] : ['48%', '72%'],
       data: rows.map((r, i) => ({ name:TASK_CN[r.key] || r.label || r.key, value:+(r.spendShare*100).toFixed(1), itemStyle:{ color:PAL[(i+1)%PAL.length] } })),
-      label: { show:true, position:'center', formatter:'30 天\n任务花费', fontSize:14, color:'#a89f8a', lineHeight:20 },
+      label: { show:true, position:'center', formatter:'30 天\n任务花费', fontSize:14, color:themeColor('txt2'), lineHeight:20 },
       itemStyle: { borderColor:'#1d1a15', borderWidth:2, borderRadius:4 },
       emphasis: { scaleSize:5 },
     }],
@@ -590,18 +592,18 @@ function renderCat() {
   const total = Object.values(last.ys || {}).reduce((s, v) => s+v, 0);
   const rows = Object.entries(last.ys || {}).filter(([s]) => s !== 'Others').sort((a, b) => b[1]-a[1]).slice(0, 8);
   const fmtr = def.unit ? (v => v.toFixed(0)+' '+def.unit) : fmtTok;
-  $('#cat-sub').textContent = `${def.label} · ${last.x} · 当日总量 ${fmtr(total)}`;
+  $('#cat-sub').textContent = `${def.label}，${last.x}，当日总量 ${fmtr(total)}`;
   c.setOption({
     tooltip: Object.assign({ trigger:'axis', axisPointer:{type:'shadow'}, formatter(ps) {
       const r = rows[ps[0].dataIndex];
       return `<b>${esc(nameOf(r[0]))}</b><br>${def.unit ? '时长' : 'Token'}：${fmtr(r[1])}<br>占${esc(def.label)}类：${(r[1]/total*100).toFixed(1)}%`;
     } }, TIP),
     grid: { left:8, right: isNarrow()?54:90, top:10, bottom:10, containLabel:true },
-    xAxis: Object.assign(AXIS_C(true), { type:'value', splitNumber: isNarrow()?3:null, axisLabel:{ color:'#a89f8a', fontSize:isNarrow()?10:11, hideOverlap:true, formatter:fmtr } }),
-    yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:rows.map(r => nameOf(r[0])), axisLabel:{ color:'#ddd6c4', fontSize:12.5, width: isNarrow()?126:170, overflow:'break', lineHeight:16 } }),
+    xAxis: Object.assign(AXIS_C(true), { type:'value', splitNumber: isNarrow()?3:null, axisLabel:{ color:themeColor('txt2'), fontSize:12, hideOverlap:true, formatter:fmtr } }),
+    yAxis: Object.assign(AXIS_C(false), { type:'category', inverse:true, data:rows.map(r => nameOf(r[0])), axisLabel:{ color:themeColor('txt'), fontSize:12.5, width: isNarrow()?126:170, overflow:'break', lineHeight:16 } }),
     series: [{
       type:'bar', data:rows.map(r => r[1]), barWidth:'56%',
-      label: { show:true, position:'right', color:'#a89f8a', fontSize:11, formatter:p => fmtr(p.value) },
+      label: { show:true, position:'right', color:themeColor('txt2'), fontSize:12, formatter:p => fmtr(p.value) },
       itemStyle: { borderRadius:[0, 2, 2, 0], color: p => authorColor(authorOf(rows[p.dataIndex][0])) },
     }],
   }, { notMerge:true });
@@ -630,8 +632,8 @@ function renderRisers() {
     return `<div class="riser" data-slug="${esc(x.variantPermaslug)}">
       <div class="r-head"><span class="r-name">${esc(nameOf(x.variantPermaslug))}<span class="r-tag">${x.tag}</span></span>
       <span class="r-grow">${g}</span></div>
-      <div class="r-tok">周 Token ${fmtTok(x.weeklyTokens)} · 上周 ${fmtTok(x.prevWeeklyTokens || 0)}</div>
-      ${sparkline(x.series || x.dailySeries || [], '#c74a3c')}
+      <div class="r-tok">周 Token ${fmtTok(x.weeklyTokens)}，上周 ${fmtTok(x.prevWeeklyTokens || 0)}</div>
+      ${sparkline(x.series || x.dailySeries || [], themeColor('red'))}
     </div>`;
   }).join('');
 }
@@ -761,8 +763,7 @@ $('#model-query').addEventListener('input', e => {
   $('#model-search-status').textContent = '支持名称或 slug，回车查看详情。';
 });
 
-let rsz;
-window.addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => Object.values(chartInstances).forEach(c => c.resize()), 200); });
+window.addEventListener('resize', () => Object.values(chartInstances).forEach(c => c.resize()));
 
 setInterval(() => {
   if (document.hidden) return;   // 后台标签页不倒数不空转
@@ -839,7 +840,7 @@ if (typeof window !== 'undefined') window.__render = () => { prepareBench(); ren
 /* 公共 API：js/tools.js、js/card.js 按序消费（零构建的多文件拆分，无打包器） */
 if (typeof window !== 'undefined') window.MB = {
   D, nameOf, authorName, authorOf, authorColor, baseSlug, esc,
-  fmtTok, fmtReq, fmtUsd, bjTime, modelFacts, chart, isNarrow,
+  fmtTok, fmtReq, fmtUsd, bjTime, modelFacts, chart, isNarrow, themeColor,
   aggregateUsage, openCardSlug, subscribers: [],
 };
 /* 弹层打开前清掉所有图表 tooltip：触摸设备上 tooltip 会残留并盖住弹层遮罩 */

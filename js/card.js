@@ -44,7 +44,7 @@ function openCard(slug, anchorEl) {
     stat(esc(DA_LABEL[k] || k), Math.round(v.elo) + (v.win != null ? ' <small>胜' + v.win.toFixed(0) + '%</small>' : ''))).join('');
   $('#modal-body').innerHTML =
     `<h3 class="m-name" style="color:${authorColor(f.author)}">${esc(f.name)}${chips}</h3>` +
-    `<p class="m-slug">${esc(f.slug)} · ${esc(authorName(f.author))}${f.created ? ' · ' + esc(f.created.slice(0, 10)) + ' 上架' : ''}</p>` +
+    `<p class="m-slug">${esc(f.slug)}，${esc(authorName(f.author))}${f.created ? '，' + esc(f.created.slice(0, 10)) + ' 上架' : ''}</p>` +
     '<div class="m-grid">' +
     stat('综合智能', f.aa.intelligence != null ? f.aa.intelligence.toFixed(1) : '--') +
     stat('编程分', f.aa.coding != null ? f.aa.coding.toFixed(1) : '--') +
